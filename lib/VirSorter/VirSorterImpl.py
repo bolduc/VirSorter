@@ -2,6 +2,7 @@
 #BEGIN_HEADER
 import os
 from installed_clients.KBaseReportClient import KBaseReport
+from VirSorter.VirSorter_utils.V
 #END_HEADER
 
 
