@@ -4,7 +4,7 @@ A KBase module: VirSorter
 
 module VirSorter {
 
-    typedef string obj_ref
+    typedef string obj_ref;
 
     typedef structure {
         string report_name;
