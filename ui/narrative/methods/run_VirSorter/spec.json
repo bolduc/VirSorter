@@ -11,16 +11,86 @@
     },
     "parameters": [ 
         {
-            "id": "parameter_1",
-            "optional": true,
+            "id": "genomes",
+            "optional": false,
             "advanced": false,
             "allow_multiple": false,
             "default_values": [ "" ],
             "field_type": "text",
             "text_options": {
-                "valid_ws_types": [ ]
+                "valid_ws_types": ["KBaseGenomeAnnotations.Assembly", "KBaseGenomes.Genome"]
+            }
+        },
+        {
+            "id": "database",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "1" ],
+            "field_type": "dropdown",
+            "dropdown_options": {
+                "options": [{
+                    "value": "1",
+                    "display": "RefSeq",
+                    "id": "RefSeq",
+                    "ui-name": "RefSeq"
+                },
+                {
+                    "value": "2",
+                    "display": "Virome",
+                    "id": "Virome",
+                    "ui-name": "Virome"
+                }]
+            }
+        },
+        {
+            "id": "database",
+            "optional": true,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "valid_ws_types": ["KBaseGenomeAnnotations.Assembly", "KBaseGenomes.Genome"]
+            }
+        },
+        {
+            "id": "diamond",
+            "optional": true,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "1" ],
+            "field_type": "checkbox",
+            "checkbox_options": {
+                "checked_value": "0",
+                "unchecked_value": "1"
+            }
+        },
+        {
+            "id": "keep_db",
+            "optional": true,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "1" ],
+            "field_type": "checkbox",
+            "checkbox_options": {
+                "checked_value": "0",
+                "unchecked_value": "1"
+            }
+        },
+        {
+            "id": "no_c",
+            "optional": true,
+            "advanced": true,
+            "allow_multiple": false,
+            "default_values": [ "1" ],
+            "field_type": "checkbox",
+            "checkbox_options": {
+                "checked_value": "0",
+                "unchecked_value": "1"
             }
         }
+
     ],
     "behavior": {
         "service-mapping": {
@@ -32,11 +102,32 @@
                     "narrative_system_variable": "workspace",
                     "target_property": "workspace_name"
                 },{
-                    "narrative_system_variable": "workspace_id",
-                    "target_property": "workspace_id"
+                    "input_parameter": "genomes",
+                    "target_property": "genomes",
+                    "target_type_transform": "resolved-ref"
                 },{
-                    "input_parameter": "parameter_1",
-                    "target_property": "parameter_1"
+                    "input_parameter": "database",
+                    "target_property": "database"
+                },
+                {
+                    "input_parameter": "add_genomes",
+                    "target_property": "add_genomes"
+                },
+                {
+                    "input_parameter": "virome",
+                    "target_property": "virome"
+                },
+                {
+                    "input_parameter": "diamond",
+                    "target_property": "diamond"
+                },
+                {
+                    "input_parameter": "keep_db",
+                    "target_property": "keep_db"
+                },
+                {
+                    "input_parameter": "no_c",
+                    "target_property": "no_c"
                 }
             ],
             "output_mapping": [
