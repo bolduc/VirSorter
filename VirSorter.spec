@@ -18,11 +18,9 @@ module VirSorter {
         string keep_db;
         string no_c;
 
-    } ReportResults;
+    } InParams;
 
-    /*
-        This example function accepts any number of parameters and returns results in a KBaseReport
-    */
-    funcdef run_VirSorter(mapping<string,UnspecifiedObject> params) returns (ReportResults output) authentication required;
+    funcdef run_VirSorter(InParams params)
+        returns () authentication required;
 
 };
