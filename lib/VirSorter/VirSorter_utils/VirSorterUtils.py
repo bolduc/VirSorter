@@ -2,6 +2,8 @@ import os
 import subprocess
 import time
 
+from installed_clients.DataFileUtilClient import DataFileUtil as dfu
+
 
 def log(message, prefix_newline=False):
     """
