@@ -6,7 +6,33 @@ MAINTAINER KBase Developer
 # install line here, a git checkout to download code, or run any other
 # installation scripts.
 
-# RUN apt-get update
+## docker build -t bolduc/virsorter .
+## docker run --rm -v $(pwd):/wdir -w /wdir bolduc/virsorter:latest -f Contigs.fasta -db 1 --ncpu 4 --data-dir /virsorter-data
+
+## Prepare the environment variables
+ENV PATH=/miniconda/bin:${PATH} PERL5LIB=/miniconda/lib/perl5/site_perl/5.22.0/:${PERL5LIB}
+
+## Install dependencies
+RUN apt-get update && apt-get install -y libdb-dev curl git build-essential
+
+RUN curl -LO http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh && \
+	bash Miniconda-latest-Linux-x86_64.sh -p /miniconda -b && \
+	rm Miniconda-latest-Linux-x86_64.sh
+
+RUN conda update -y conda && \
+  conda install -y -c bioconda mcl=14.137 muscle blast perl-bioperl perl-file-which hmmer=3.1b2 perl-parallel-forkmanager perl-list-moreutils diamond && \
+  conda clean --yes --tarballs --packages --source-cache
+
+RUN git clone https://github.com/simroux/VirSorter.git && \
+  cd VirSorter/Scripts && make clean && make && \
+  ln -s /VirSorter/wrapper_phage_contigs_sorter_iPlant.pl /usr/local/bin/ && \
+  ln -s /VirSorter/Scripts /usr/local/bin/
+
+RUN curl -LO http://metagene.nig.ac.jp/metagene/mga_x86_64.tar.gz && \
+  tar -xvf mga_x86_64.tar.gz && mv mga_linux_ia64 /usr/local/bin/
+
+RUN apt-get purge -y --auto-remove curl ca-certificates && apt-get clean && \
+  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # -----------------------------------------
