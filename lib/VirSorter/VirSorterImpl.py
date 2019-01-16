@@ -48,22 +48,32 @@ class VirSorter:
         # ctx is the context object
         # return variables are: output
         #BEGIN run_VirSorter
-        report = KBaseReport(self.callback_url)
-        report_info = report.create({'report': {'objects_created':[],
-                                                'text_message': params['parameter_1']},
-                                                'workspace_name': params['workspace_name']})
-        output = {
-            'report_name': report_info['name'],
-            'report_ref': report_info['ref'],
-        }
+
+        self.callback_url = os.environ['SDK_CALLBACK_URL']
+        params['SDK_CALLBACK_URL'] = self.callback_url
+        params['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
+
+        vc = VirSorterUtils(self.config)
+
+        # report = KBaseReport(self.callback_url)
+        # report_info = report.create({'report': {'objects_created':[],
+        #                                         'text_message': params['parameter_1']},
+        #                                         'workspace_name': params['workspace_name']})
+        # output = {
+        #     'report_name': report_info['name'],
+        #     'report_ref': report_info['ref'],
+        # }
+        returnVal = vc.run_VirSorter(params)  # Output
+        return returnVal
+
         #END run_VirSorter
 
         # At some point might do deeper type checking...
-        if not isinstance(output, dict):
-            raise ValueError('Method run_VirSorter return value ' +
-                             'output is not type dict as required.')
+        # if not isinstance(output, dict):
+        #     raise ValueError('Method run_VirSorter return value ' +
+        #                      'output is not type dict as required.')
         # return the results
-        return [output]
+        # return [output]
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",

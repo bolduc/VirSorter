@@ -31,15 +31,15 @@
             "dropdown_options": {
                 "options": [{
                     "value": "1",
-                    "display": "RefSeq",
-                    "id": "RefSeq",
-                    "ui-name": "RefSeq"
+                    "display": "RefSeq DB",
+                    "id": "RefSeq DB",
+                    "ui-name": "RefSeq DB"
                 },
                 {
                     "value": "2",
-                    "display": "Virome",
-                    "id": "Virome",
-                    "ui-name": "Virome"
+                    "display": "Virome DB",
+                    "id": "Virome DB",
+                    "ui-name": "Virome DB"
                 }]
             }
         },

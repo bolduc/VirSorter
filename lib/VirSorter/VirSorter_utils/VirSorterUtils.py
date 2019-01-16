@@ -18,19 +18,23 @@ class VirSorterUtils:
         self.scratch = os.path.abspath(config['scratch'])
 
     def VirSorter_help(self):
-        command = "wrapper_phage_contigs_sorter_iPlant.pl"
+        command = 'wrapper_phage_contigs_sorter_iPlant.pl --help'
         self._run_command(command)
 
     def run_VirSorter(self, params):
 
         mapping = {
-
+            'genomes': '-f',
+            'database': '--db',
+            'add_genomes': '--cp',  # Custom phage sequences
         }
 
         command = 'wrapper_phage_contigs_sorter_iPlant.pl'
 
         for param, cmd in mapping.items():
             command += ' {} {}'.format(cmd, params[param])
+
+        bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
 
         self._run_command(command)
 
