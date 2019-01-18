@@ -78,5 +78,13 @@ class VirSorterTest(unittest.TestCase):
         #
         # Check returned data with
         # self.assertEqual(ret[...], ...) or other unittest methods
-        ret = self.getImpl().run_VirSorter(self.getContext(), {'workspace_name': self.getWsName(),
-                                                                    'parameter_1': 'Hello World!'})
+        ret = self.getImpl().run_VirSorter(self.getContext(), {
+            'workspace_name': self.getWsName(),
+            'genomes': 'Hello World!',
+            'database': '1',
+            'virome': '0',
+            'diamond': '1',
+            'keep_db': '1',
+            'no_c': '1'
+
+        })

@@ -13,3 +13,5 @@ module-version:
 owners:
     [bbolduc]
 
+data-version:
+    [0.0.1]

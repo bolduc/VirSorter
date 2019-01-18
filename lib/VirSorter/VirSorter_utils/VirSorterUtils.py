@@ -25,16 +25,26 @@ class VirSorterUtils:
 
         mapping = {
             'genomes': '-f',
-            'database': '--db',
-            'add_genomes': '--cp',  # Custom phage sequences
+            'database': '--db'
         }
 
-        command = 'wrapper_phage_contigs_sorter_iPlant.pl'
+        print(params)
+
+        command = 'wrapper_phage_contigs_sorter_iPlant.pl --data-dir /data/virsorter-data'
 
         for param, cmd in mapping.items():
             command += ' {} {}'.format(cmd, params[param])
 
+        # if params['add_genomes'] == '1':
+        #     command += ' --cp {}'.format()  # Add custom phage genomes, from where?
+
         bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
+
+        for bool_arg in bool_args:
+            if bool_arg == 'keep_db':
+                bool_arg = 'keep-db'
+            if params[bool_arg] == 0:
+                command += ' --{}'.format(bool_arg)
 
         self._run_command(command)
 
@@ -70,6 +80,8 @@ class VirSorterUtils:
 
         # Get URL
         self.dfu = dfu(params['SDK_CALLBACK_URL'])
+
+        return 'Getting to generate report!'
 
     def _mkdir_p(self, path):
         """
