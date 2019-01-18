@@ -15,7 +15,7 @@ ENV PATH=/miniconda/bin:${PATH} PERL5LIB=/miniconda/lib/perl5/site_perl/5.22.0/:
 ## Install dependencies
 RUN apt-get update && apt-get install -y libdb-dev curl git build-essential
 
-RUN curl -LO http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh && \
+RUN wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh && \
 	bash Miniconda-latest-Linux-x86_64.sh -p /miniconda -b && \
 	rm Miniconda-latest-Linux-x86_64.sh
 
