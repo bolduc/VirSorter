@@ -31,8 +31,7 @@ RUN git clone https://github.com/simroux/VirSorter.git && \
 RUN curl -LO http://metagene.nig.ac.jp/metagene/mga_x86_64.tar.gz && \
   tar -xvf mga_x86_64.tar.gz && mv mga_linux_ia64 /usr/local/bin/
 
-RUN apt-get purge -y --auto-remove curl ca-certificates && apt-get clean && \
-  rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 
 # -----------------------------------------
