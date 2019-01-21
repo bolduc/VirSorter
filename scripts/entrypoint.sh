@@ -20,8 +20,10 @@ elif [ "${1}" = "init" ] ; then
   cd /data/
   echo "Getting databases"
   curl -O https://zenodo.org/record/1168727/files/virsorter-data-v2.tar.gz
-  tar zxf virsorter-data-v2.tar.gz
+  tar zxvf virsorter-data-v2.tar.gz
   rm -rf virsorter-data-v2.tar.gz
+
+  ls /data/
 
   if [[ -d "/data/virsorter-data" ]] ; then
     touch /data/__READY__
