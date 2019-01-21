@@ -64,13 +64,10 @@ class VirSorterUtils:
 
         genome_fp = genome_ret['path']
 
-        print(genome_fp)
-
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --data-dir /data/virsorter-data'
 
         # Add in first args
         command += ' -f {} --db {}'.format(genome_fp, params['database'])
-        print(params)
 
         # if params['add_genomes'] == '1':
         #     command += ' --cp {}'.format()  # Add custom phage genomes, from where?
@@ -161,9 +158,6 @@ class VirSorterUtils:
         pred_gbs = glob.glob(os.path.join(virsorter_outdir, 'Predicted_viral_sequences/VIRSorter_*.gb'))
         # Summary 'table'
         glob_signal = os.path.join(virsorter_outdir, 'VIRSorter_global-phage-signal.csv')
-
-        print('pred_fna', pred_fnas)
-        print('pred_gb', pred_gbs)
 
         # ...
         output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
