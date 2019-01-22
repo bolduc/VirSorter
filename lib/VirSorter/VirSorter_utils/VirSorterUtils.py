@@ -57,10 +57,12 @@ class VirSorterUtils:
         params['SDK_CALLBACK_URL'] = self.callback_url
         params['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
 
+        print(params)
+
         # Get contigs from 'assembly'
         self.AssemblyUtil = AssemblyUtil(self.callback_url)
         genome_ret = self.AssemblyUtil.get_assembly_as_fasta({
-            'ref': "23130/2/1"
+            'ref': params['genomes']
         })
 
         genome_fp = genome_ret['path']
