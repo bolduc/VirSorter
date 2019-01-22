@@ -23,6 +23,8 @@ RUN conda update -y conda && \
   conda install -y -c bioconda mcl=14.137 muscle blast perl-bioperl perl-file-which hmmer=3.1b2 \
   perl-parallel-forkmanager perl-list-moreutils diamond pandas
 
+RUN conda install -y -c anaconda pyparsing
+
 ## Keeping separate, although not very Docker-kosher, as these are packages not installed in base image???
 RUN conda install -y nose jinja2 && pip install jsonrpcbase && \
   conda clean --yes --tarballs --packages --source-cache

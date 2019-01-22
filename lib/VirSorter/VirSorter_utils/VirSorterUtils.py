@@ -6,6 +6,7 @@ import uuid
 import tarfile
 from string import Template
 import pandas as pd
+from pyparsing import Literal, SkipTo
 
 from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.DataFileUtilClient import DataFileUtil as dfu
@@ -128,12 +129,33 @@ class VirSorterUtils:
         df.index.name = columns[0]
         df.reset_index(inplace=True)
 
-        html = df.to_html(index=False, classes='my_class" id = "my_id')
+        html = df.to_html(index=False, classes='my_class table-striped" id = "my_id')
 
         # Need to file write below
         direct_html = html_template.substitute(html_table=html)
 
-        return direct_html
+        # Find header so it can be copied to footer, as dataframe.to_html doesn't include footer
+        start_header = Literal("<thead>")
+        end_header = Literal("</thead>")
+
+        text = start_header + SkipTo(end_header)
+
+        new_text = ''
+        for data, start_pos, end_pos in text.scanString(direct_html):
+            new_text = ''.join(data).replace(' style="text-align: right;"', '').replace('thead>',
+                                                                                        'tfoot>\n  ') + '\n</tfoot>'
+
+        # Get start and end positions to insert new text
+        end_tbody = Literal("</tbody>")
+        end_table = Literal("</table>")
+
+        insertion_pos = end_tbody + SkipTo(end_table)
+
+        final_html = ''
+        for data, start_pos, end_pos in insertion_pos.scanString(direct_html):
+            final_html = direct_html[:start_pos + 8] + '\n' + new_text + direct_html[start_pos + 8:]
+
+        return final_html
 
     def _generate_report(self, params):
         """
