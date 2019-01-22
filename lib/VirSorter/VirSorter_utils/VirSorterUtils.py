@@ -57,8 +57,6 @@ class VirSorterUtils:
         params['SDK_CALLBACK_URL'] = self.callback_url
         params['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
 
-        print(params)
-
         # Get contigs from 'assembly'
         self.AssemblyUtil = AssemblyUtil(self.callback_url)
         genome_ret = self.AssemblyUtil.get_assembly_as_fasta({
@@ -78,7 +76,7 @@ class VirSorterUtils:
         bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
 
         for bool_arg in bool_args:
-            if params[bool_arg] == 0:
+            if params[bool_arg] == 1:  # 0 is true and therefore run
                 if bool_arg == 'keep_db':
                     bool_arg = 'keep-db'
 
