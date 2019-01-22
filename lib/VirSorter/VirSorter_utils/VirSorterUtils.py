@@ -36,6 +36,7 @@ html_template = Template("""<!DOCTYPE html>
   </body>
 </html>""")
 
+
 def log(message, prefix_newline=False):
     """
     Logging function, provides a hook to suppress or redirect log messages.
@@ -208,7 +209,9 @@ class VirSorterUtils:
             'description': 'Genbank-formatted sequences of VIRSorter predicted phage'
         })
 
+        # Use global signal (i.e. summary) file and create HTML-formatted version
         raw_html = self._parse_summary(glob_signal)
+
         html_fp = os.path.join(output_dir, 'index.html')
 
         with open(html_fp, 'w') as html_fh:

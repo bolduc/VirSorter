@@ -65,7 +65,7 @@ class VirSorter:
         #     'report_ref': report_info['ref'],
         # }
         returnVal = vc.run_VirSorter(params)  # Output
-        return returnVal
+        return [returnVal]
 
         #END run_VirSorter
 
