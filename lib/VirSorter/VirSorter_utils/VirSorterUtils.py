@@ -18,8 +18,23 @@ html_template = Template("""<!DOCTYPE html>
   <head>
     <link href="https://netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/buttons/1.5.2/css/buttons.dataTables.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.3.1.js" type="text/javascript"></script>
     <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js" type="text/javascript"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js" type="text/javascript"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js" type="text/javascript"></script>
+
+    <style>
+    tfoot input {
+        width: 100%;
+        padding: 3px;
+        box-sizing: border-box;
+    }
+    </style>
+
   </head>
   <body>
     <div class="container">
@@ -30,9 +45,34 @@ html_template = Template("""<!DOCTYPE html>
 
     <script type="text/javascript">
       $$(document).ready(function() {
-          $$('#my_id').DataTable();
+        $$('#my_id tfoot th').each( function () {
+          var title = $$(this).text();
+          $$(this).html( '<input type="text" placeholder="Search '+title+'" />' );
+        });
+
+        var table = $$('#my_id').DataTable({
+          buttons: [
+            'copyHtml5',
+            'excelHtml5',
+            'csvHtml5',
+            'pdfHtml5'],
+          scrollX: true,
+          dom: 'Bfrtip'  //Necessary for buttons to work
+        });
+
+        table.columns().every( function () {
+          var that = this;
+
+          $$( 'input', this.footer() ).on( 'keyup change', function () {
+            if ( that.search() !== this.value ) {
+              that
+              .search( this.value )
+              .draw();
+            }
+          });
+        } );
       } );
-      </script>
+    </script>
   </body>
 </html>""")
 
