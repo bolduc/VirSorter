@@ -263,6 +263,18 @@ class VirSorterUtils:
             dest_fn = 'VirSorter.{}.fasta'.format(category.zfill(3))
             dest_fp = os.path.join(output_dir, dest_fn)
 
+            genome_size = 0
+            gc_content = []
+
+            with open(category_fp, 'rU') as category_fh:
+                for record in SeqIO.parse(category_fh, 'fasta'):
+                    seq = record.seq
+                    gc_content.append(SeqUtils.GC(seq))
+                    genome_size += len(seq)
+
+            if genome_size == 0:  # Empty file
+                break
+
             shutil.copyfile(category_fp, dest_fp)
 
             result = self.au.save_assembly_from_fasta(
