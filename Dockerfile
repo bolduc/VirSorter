@@ -25,6 +25,8 @@ RUN conda update -y conda && \
 
 RUN conda install -y -c anaconda pyparsing
 
+RUN conda install -c bioconda biopython
+
 ## Keeping separate, although not very Docker-kosher, as these are packages not installed in base image???
 RUN conda install -y nose jinja2 && pip install jsonrpcbase && \
   conda clean --yes --tarballs --packages --source-cache

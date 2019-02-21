@@ -7,10 +7,15 @@ import tarfile
 from string import Template
 import pandas as pd
 from pyparsing import Literal, SkipTo
+import shutil
+import csv
+from Bio import SeqIO, SeqUtils
+
 
 from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.DataFileUtilClient import DataFileUtil as dfu
 from installed_clients.KBaseReportClient import KBaseReport
+from installed_clients.MetagenomeUtilsClient import MetagenomeUtils
 
 
 html_template = Template("""<!DOCTYPE html>
@@ -88,13 +93,17 @@ class VirSorterUtils:
 
     def __init__(self, config):
         self.scratch = os.path.abspath(config['scratch'])
+        self.callback_url = os.environ['SDK_CALLBACK_URL']
+        self.mgu = MetagenomeUtils(self.callback_url)
+        self.au = AssemblyUtil(self.callback_url)
+
 
     def VirSorter_help(self):
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --help'
         self._run_command(command)
 
     def run_VirSorter(self, params):
-        self.callback_url = os.environ['SDK_CALLBACK_URL']
+
         params['SDK_CALLBACK_URL'] = self.callback_url
         params['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
 
@@ -110,9 +119,6 @@ class VirSorterUtils:
 
         # Add in first args
         command += ' -f {} --db {}'.format(genome_fp, params['database'])
-
-        # if params['add_genomes'] == '1':
-        #     command += ' --cp {}'.format()  # Add custom phage genomes, from where?
 
         bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
 
@@ -249,6 +255,29 @@ class VirSorterUtils:
             'description': 'Genbank-formatted sequences of VIRSorter predicted phage'
         })
 
+        # Before creating final HTML output, need to create BinnedContig object so other tools/users can take advantage
+        # of its features, but also to feed more easily into other tools (e.g. vConTACT)
+        created_objects = []
+        for category_fp in pred_fnas:
+            category = os.path.basename(category_fp).split('cat-')[-1].split('.')[0]
+            dest_fn = 'VirSorter.{}.fasta'.format(category.zfill(3))
+            dest_fp = os.path.join(output_dir, dest_fn)
+
+            shutil.copyfile(category_fp, dest_fp)
+
+            result = self.au.save_assembly_from_fasta(
+                {'file': {'path': dest_fp},
+                 'workspace_name': params['workspace_name'],
+                 'assembly_name': 'VirSorter-Category-{}'.format(category)
+                 })
+
+            created_objects.append({"ref": result,
+                                    "description": "AssembliedContigs from VIRSorter"})
+
+        # Now have a "max_bin" directory
+
+        # But before finishing up max_bin stuff, need to make an assembly object so there's an assembly ref to use
+
         # Use global signal (i.e. summary) file and create HTML-formatted version
         raw_html = self._parse_summary(glob_signal)
 
@@ -276,8 +305,9 @@ class VirSorterUtils:
                          'report_object_name': 'VIRSorter_report_{}'.format(str(uuid.uuid4())),
                          'file_links': output_files,
                          # Don't use until data objects that are created as result of running app
-                         # 'objects_created': [{'ref': matrix_obj_ref,
-                         #                      'description': 'Imported Matrix'}],
+                         # 'objects_created': [{'ref': created_objects,
+                         #                      'description': 'Fix this before publication'}],
+                         'objects_created': created_objects,
                          }
 
         kbase_report_client = KBaseReport(params['SDK_CALLBACK_URL'], token=params['KB_AUTH_TOKEN'])

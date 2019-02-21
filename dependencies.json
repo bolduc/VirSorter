@@ -7,8 +7,16 @@
   "type" : "sdk",
   "version_tag" : "release"
 }, {
+  "module_name" : "kb_uploadmethods",
+  "type" : "sdk",
+  "version_tag" : "release"
+}, {
   "module_name" : "KBaseReport",
   "type" : "core"
+}, {
+  "module_name" : "MetagenomeUtils",
+  "type" : "sdk",
+  "version_tag" : "release"
 }, {
   "module_name" : "Workspace",
   "type" : "core",
