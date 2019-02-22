@@ -272,19 +272,18 @@ class VirSorterUtils:
                     gc_content.append(SeqUtils.GC(seq))
                     genome_size += len(seq)
 
-            if genome_size == 0:  # Empty file
-                break
+            if genome_size != 0:  # Empty file
 
-            shutil.copyfile(category_fp, dest_fp)
+                shutil.copyfile(category_fp, dest_fp)
 
-            result = self.au.save_assembly_from_fasta(
-                {'file': {'path': dest_fp},
-                 'workspace_name': params['workspace_name'],
-                 'assembly_name': 'VirSorter-Category-{}'.format(category)
-                 })
+                result = self.au.save_assembly_from_fasta(
+                    {'file': {'path': dest_fp},
+                     'workspace_name': params['workspace_name'],
+                     'assembly_name': 'VirSorter-Category-{}'.format(category)
+                     })
 
-            created_objects.append({"ref": result,
-                                    "description": "AssembliedContigs from VIRSorter"})
+                created_objects.append({"ref": result,
+                                        "description": "AssembliedContigs from VIRSorter"})
 
         # Now have a "max_bin" directory
 
