@@ -85,6 +85,7 @@ class VirSorterTest(unittest.TestCase):
             'virome': '0',
             'diamond': '1',
             'keep_db': '1',
-            'no_c': '1'
+            'no_c': '1',
+            'binned_contig_name': 'binned_contig_name'
 
         })

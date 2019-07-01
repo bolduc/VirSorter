@@ -80,6 +80,12 @@ parameters :
         long-hint: |
             Flag to enable different calculation of enrichment statistics
 
+    binned_contig_name:
+        ui-name: |
+            BinnedContig Object Name
+        short-hint: |
+            The name for the output BinnedContig object.
+
 description : |
     <p>VirSorter: mining viral signal from microbial genomic data.</p>
 

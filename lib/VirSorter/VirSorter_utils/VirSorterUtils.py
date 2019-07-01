@@ -97,7 +97,6 @@ class VirSorterUtils:
         self.mgu = MetagenomeUtils(self.callback_url)
         self.au = AssemblyUtil(self.callback_url)
 
-
     def VirSorter_help(self):
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --help'
         self._run_command(command)
@@ -217,8 +216,9 @@ class VirSorterUtils:
         # Output directory should be $PWD/virsorter-out
         virsorter_outdir = os.path.join(os.getcwd(), 'virsorter-out')
 
-        # kb_deseq functions out adding output files, then building report files, then sending all of them
-        # to the workspace
+        # Replacing individual download files with BinnedContigs
+
+        # kb_deseq adds output files, then builds report files and sends all of them to the workspace
         output_files = []  # Appended list of dicts containing attributes
 
         # Collect all the files needed to report to end-user
@@ -228,13 +228,13 @@ class VirSorterUtils:
         # Summary 'table'
         glob_signal = os.path.join(virsorter_outdir, 'VIRSorter_global-phage-signal.csv')
 
-        # ...
+        # Make output directory
         output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
         self._mkdir_p(output_dir)
 
         # Deal with nucleotide fasta
         pred_fna_tgz_fp = os.path.join(output_dir, 'VIRSorter_predicted_viral_fna.tar.gz')
-        with tarfile.open(pred_fna_tgz_fp, 'w:gz') as pred_fna_tgz_fh:
+        with tarfile.open(pred_fna_tgz_fp, 'w:gz') as pred_fna_tgz_fh:  # Compress to minimize disk usage
             for pred_fna in pred_fnas:
                 pred_fna_tgz_fh.add(pred_fna, arcname=os.path.basename(pred_fna))
         output_files.append({
@@ -243,6 +243,21 @@ class VirSorterUtils:
             'label': os.path.basename(pred_fna_tgz_fp),
             'description': 'FASTA-formatted nucleotide sequences of VIRSorter predicted phage'
         })
+        # Copy to temporary directory
+        binned_contig_output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(binned_contig_output_dir)
+
+        [shutil.copy2(pred_fna, binned_contig_output_dir) for pred_fna in pred_fnas]
+
+        generate_binned_contig_param = {
+            'file_directory': binned_contig_output_dir,
+            'assembly_ref': params.get('genomes'),  # assembly_ref
+            'binned_contig_name': params.get('binned_contig_name'),
+            'workspace_name': params['workspace_name']
+        }
+        binned_contig_object_ref = self.mgu.file_to_binned_contigs(
+            generate_binned_contig_param).get('binned_contig_obj_ref')
+
 
         pred_gb_tgz_fp = os.path.join(output_dir, 'VIRSorter_predicted_viral_gb.tar.gz')
         with tarfile.open(pred_gb_tgz_fp, 'w:gz') as pred_gb_tgz_fh:
@@ -258,6 +273,10 @@ class VirSorterUtils:
         # Before creating final HTML output, need to create BinnedContig object so other tools/users can take advantage
         # of its features, but also to feed more easily into other tools (e.g. vConTACT)
         created_objects = []
+        # Add binned contigs reference here, as it was already created above
+        created_objects.append({"ref": binned_contig_object_ref,
+                                "description": "BinnedContigs from VIRSorter"})
+
         for category_fp in pred_fnas:
             category = os.path.basename(category_fp).split('cat-')[-1].split('.')[0]
             dest_fn = 'VirSorter.{}.fasta'.format(category.zfill(3))
@@ -309,7 +328,7 @@ class VirSorterUtils:
             'description': 'HTML summary report for VIRSorter'
         }]
 
-        report_params = {'message': 'Basic message to show in the report',
+        report_params = {'message': 'VIRSorter Results!',
                          'workspace_name': params['workspace_name'],
                          'html_links': html_report,
                          'direct_html_link_index': 0,

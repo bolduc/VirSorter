@@ -56,14 +56,6 @@ class VirSorter:
 
         vc = VirSorterUtils(self.config)
 
-        # report = KBaseReport(self.callback_url)
-        # report_info = report.create({'report': {'objects_created':[],
-        #                                         'text_message': params['parameter_1']},
-        #                                         'workspace_name': params['workspace_name']})
-        # output = {
-        #     'report_name': report_info['name'],
-        #     'report_ref': report_info['ref'],
-        # }
         returnVal = vc.run_VirSorter(params)  # Output
         return [returnVal]
 
