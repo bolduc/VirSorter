@@ -25,8 +25,11 @@ RUN conda install -y -c bioconda mcl=14.137 muscle blast perl-bioperl perl-file-
 #RUN conda install -y -c anaconda
 
 ## Keeping separate, although not very Docker-kosher, as these are packages not installed in base image???
-RUN conda install -y nose jinja2 && pip install jsonrpcbase && \
-  conda clean --yes --tarballs --packages --source-cache
+RUN conda install -y nose jinja2
+
+RUN pip install jsonrpcbase
+
+RUN conda clean --yes --tarballs --packages --source-cache
 
 RUN git clone https://github.com/simroux/VirSorter.git && \
   cd VirSorter/Scripts && make clean && make && \
