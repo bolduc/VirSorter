@@ -20,14 +20,15 @@ RUN apt-get update && apt-get install -y libdb-dev curl git build-essential
 #	rm Miniconda3-latest-Linux-x86_64.sh
 
 RUN conda install -y -c bioconda mcl=14.137 muscle blast perl-bioperl perl-file-which hmmer=3.1b2 \
-  perl-parallel-forkmanager perl-list-moreutils diamond pandas biopython pyparsing nose jinja2
+  perl-parallel-forkmanager perl-list-moreutils diamond pandas biopython pyparsing
 
 ## Keeping separate, although not very Docker-kosher, as these are packages not installed in base image???
 #RUN conda install -y nose jinja2
 
 RUN pip install jsonrpcbase
 
-RUN conda clean --yes --tarballs --packages --source-cache
+#RUN conda clean --yes --tarballs --packages --source-cache
+RUN conda build purge-all
 
 RUN git clone https://github.com/simroux/VirSorter.git && \
   cd VirSorter/Scripts && make clean && make && \
