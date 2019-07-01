@@ -27,7 +27,8 @@ RUN conda install -y -c bioconda mcl=14.137 muscle blast perl-bioperl perl-file-
 
 RUN pip install jsonrpcbase
 
-RUN conda clean --yes --tarballs --packages --source-cache
+#RUN conda clean --yes --tarballs --packages --source-cache
+RUN conda build purge-all
 #RUN conda-build purge-all
 
 RUN git clone https://github.com/simroux/VirSorter.git && \
