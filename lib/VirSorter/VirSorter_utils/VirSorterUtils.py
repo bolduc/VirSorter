@@ -130,7 +130,7 @@ class VirSorterUtils:
 
         self._run_command(command)
 
-        report = self._generate_report(params)
+        report = self._generate_report(params)  # Basically, do everything that's after the tool runs
 
         return report
 
@@ -213,7 +213,7 @@ class VirSorterUtils:
         # Get URL
         self.dfu = dfu(params['SDK_CALLBACK_URL'])
 
-        # Output directory should be $PWD/virsorter-out
+        # Output directory should be $PWD/virsorter-out - ASSUMES that's the output location
         virsorter_outdir = os.path.join(os.getcwd(), 'virsorter-out')
 
         # Replacing individual download files with BinnedContigs
@@ -232,7 +232,7 @@ class VirSorterUtils:
         output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
         self._mkdir_p(output_dir)
 
-        # Deal with nucleotide fasta
+        # Deal with nucleotide and protein fasta
         pred_fna_tgz_fp = os.path.join(output_dir, 'VIRSorter_predicted_viral_fna.tar.gz')
         with tarfile.open(pred_fna_tgz_fp, 'w:gz') as pred_fna_tgz_fh:  # Compress to minimize disk usage
             for pred_fna in pred_fnas:
@@ -243,21 +243,6 @@ class VirSorterUtils:
             'label': os.path.basename(pred_fna_tgz_fp),
             'description': 'FASTA-formatted nucleotide sequences of VIRSorter predicted phage'
         })
-        # Copy to temporary directory
-        binned_contig_output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
-        self._mkdir_p(binned_contig_output_dir)
-
-        [shutil.copy2(pred_fna, binned_contig_output_dir) for pred_fna in pred_fnas]
-
-        generate_binned_contig_param = {
-            'file_directory': binned_contig_output_dir,
-            'assembly_ref': params.get('genomes'),  # assembly_ref
-            'binned_contig_name': params.get('binned_contig_name'),
-            'workspace_name': params['workspace_name']
-        }
-        binned_contig_object_ref = self.mgu.file_to_binned_contigs(
-            generate_binned_contig_param).get('binned_contig_obj_ref')
-
 
         pred_gb_tgz_fp = os.path.join(output_dir, 'VIRSorter_predicted_viral_gb.tar.gz')
         with tarfile.open(pred_gb_tgz_fp, 'w:gz') as pred_gb_tgz_fh:
@@ -270,43 +255,68 @@ class VirSorterUtils:
             'description': 'Genbank-formatted sequences of VIRSorter predicted phage'
         })
 
+        # To create BinnedContig, need to create another directory with each of the "bins" as separate files?
+        binned_contig_output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
+        self._mkdir_p(binned_contig_output_dir)
+
         # Before creating final HTML output, need to create BinnedContig object so other tools/users can take advantage
         # of its features, but also to feed more easily into other tools (e.g. vConTACT)
-        created_objects = []
+        created_objects = []  # Will store the objects that go to the workspace
+
+        summary_fp = os.path.join(binned_contig_output_dir, 'VIRSorter.summary')  # Anything that ends in .summary
+        with open(summary_fp, 'w') as summary_fh:
+
+            summary_writer = csv.writer(summary_fh, delimiter='\t', quoting=csv.QUOTE_MINIMAL)
+            summary_writer.writerow(['Bin name', 'Completeness', 'Genome size', 'GC content'])
+
+            for category_fp in pred_fnas:
+                # _get_bin_ids from MetaGenomeUtils requires files to follow the header.0xx.fasta convention
+                category = os.path.basename(category_fp).split('cat-')[-1].split('.')[0]
+                dest_fn = 'VirSorter.{}.fasta'.format(category.zfill(3))
+                dest_fp = os.path.join(output_dir, dest_fn)
+                binned_contig_fp = os.path.join(binned_contig_output_dir, dest_fn)
+
+                genome_size = 0
+                gc_content = []
+
+                # Need stats for summary file
+                with open(category_fp, 'rU') as category_fh:
+                    for record in SeqIO.parse(category_fh, 'fasta'):
+                        seq = record.seq
+                        gc_content.append(SeqUtils.GC(seq))
+                        genome_size += len(seq)
+
+                summary_writer.writerow([dest_fn, '100%', genome_size, sum(gc_content)/len(gc_content)])
+
+                if genome_size != 0:  # Empty file
+
+                    print('Coping {} to results directory'.format(os.path.basename(category_fp)))
+                    # Yes, need both. One is to get file_links in report. Second is for maxbin BinnedContig
+                    shutil.copyfile(category_fp, dest_fp)
+                    shutil.copy2(category_fp, binned_contig_fp)
+
+                    result = self.au.save_assembly_from_fasta(
+                        {'file': {'path': dest_fp},
+                         'workspace_name': params['workspace_name'],
+                         'assembly_name': 'VirSorter-Category-{}'.format(category)
+                         })
+
+                    created_objects.append({"ref": result,
+                                            "description": "AssembliedContigs from VIRSorter"})
+
+        # Create BinnedContigs object, but 1st, a little metadata
+        generate_binned_contig_param = {
+            'file_directory': binned_contig_output_dir,
+            'assembly_ref': params.get('genomes'),  # assembly_ref
+            'binned_contig_name': params.get('binned_contig_name'),
+            'workspace_name': params['workspace_name']
+        }
+        binned_contig_object_ref = self.mgu.file_to_binned_contigs(
+            generate_binned_contig_param).get('binned_contig_obj_ref')
+
         # Add binned contigs reference here, as it was already created above
         created_objects.append({"ref": binned_contig_object_ref,
                                 "description": "BinnedContigs from VIRSorter"})
-
-        for category_fp in pred_fnas:
-            category = os.path.basename(category_fp).split('cat-')[-1].split('.')[0]
-            dest_fn = 'VirSorter.{}.fasta'.format(category.zfill(3))
-            dest_fp = os.path.join(output_dir, dest_fn)
-
-            genome_size = 0
-            gc_content = []
-
-            with open(category_fp, 'rU') as category_fh:
-                for record in SeqIO.parse(category_fh, 'fasta'):
-                    seq = record.seq
-                    gc_content.append(SeqUtils.GC(seq))
-                    genome_size += len(seq)
-
-            if genome_size != 0:  # Empty file
-
-                shutil.copyfile(category_fp, dest_fp)
-
-                result = self.au.save_assembly_from_fasta(
-                    {'file': {'path': dest_fp},
-                     'workspace_name': params['workspace_name'],
-                     'assembly_name': 'VirSorter-Category-{}'.format(category)
-                     })
-
-                created_objects.append({"ref": result,
-                                        "description": "AssembliedContigs from VIRSorter"})
-
-        # Now have a "max_bin" directory
-
-        # But before finishing up max_bin stuff, need to make an assembly object so there's an assembly ref to use
 
         # Use global signal (i.e. summary) file and create HTML-formatted version
         raw_html = self._parse_summary(glob_signal)
@@ -334,9 +344,6 @@ class VirSorterUtils:
                          'direct_html_link_index': 0,
                          'report_object_name': 'VIRSorter_report_{}'.format(str(uuid.uuid4())),
                          'file_links': output_files,
-                         # Don't use until data objects that are created as result of running app
-                         # 'objects_created': [{'ref': created_objects,
-                         #                      'description': 'Fix this before publication'}],
                          'objects_created': created_objects,
                          }
 
