@@ -286,11 +286,11 @@ class VirSorterUtils:
                         gc_content.append(SeqUtils.GC(seq))
                         genome_size += len(seq)
 
-                summary_writer.writerow([dest_fn, '100%', genome_size, sum(gc_content)/len(gc_content)])
-
                 if genome_size != 0:  # Empty file
 
-                    print('Coping {} to results directory'.format(os.path.basename(category_fp)))
+                    summary_writer.writerow([dest_fn, '100%', genome_size, (sum(gc_content) / len(gc_content))])
+
+                    print('Copying {} to results directory'.format(os.path.basename(category_fp)))
                     # Yes, need both. One is to get file_links in report. Second is for maxbin BinnedContig
                     shutil.copyfile(category_fp, dest_fp)
                     shutil.copy2(category_fp, binned_contig_fp)
