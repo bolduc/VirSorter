@@ -28,6 +28,7 @@ module VirSorter {
     */
     typedef structure{
         obj_ref binned_contig_obj_ref;
+        string result_directory;
         string report_name;
         string report_ref;
     }VirSorterResult;

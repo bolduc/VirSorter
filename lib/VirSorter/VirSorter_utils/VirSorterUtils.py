@@ -11,7 +11,6 @@ import shutil
 import csv
 from Bio import SeqIO, SeqUtils
 
-
 from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.DataFileUtilClient import DataFileUtil as dfu
 from installed_clients.KBaseReportClient import KBaseReport
@@ -302,7 +301,7 @@ class VirSorterUtils:
                          })
 
                     created_objects.append({"ref": result,
-                                            "description": "AssembliedContigs from VIRSorter"})
+                                            "description": "AssembledContigs from VIRSorter"})
 
         # Create BinnedContigs object, but 1st, a little metadata
         generate_binned_contig_param = {
@@ -350,7 +349,11 @@ class VirSorterUtils:
         kbase_report_client = KBaseReport(params['SDK_CALLBACK_URL'], token=params['KB_AUTH_TOKEN'])
         output = kbase_report_client.create_extended_report(report_params)
 
-        report_output = {'report_name': output['name'], 'report_ref': output['ref']}
+        report_output = {
+            'report_name': output['name'],
+            'report_ref': output['ref'],
+            'result_directory': binned_contig_output_dir,
+            'binned_contig_obj_ref': binned_contig_object_ref}
 
         return report_output
 

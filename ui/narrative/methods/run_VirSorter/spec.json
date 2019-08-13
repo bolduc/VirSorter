@@ -173,6 +173,10 @@
                 {
                     "service_method_output_path": [0,"binned_contig_obj_ref"],
                     "target_property": "binned_contig_obj_ref"
+                },
+                {
+                    "service_method_output_path": [0, "result_directory"],
+                    "target_property": "result_directory"
                 }
             ]
         }
