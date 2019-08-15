@@ -287,7 +287,11 @@ class VirSorterUtils:
                         gc_content.append(SeqUtils.GC(seq))
                         genome_size += len(seq)
 
+                        # This is very dirty, but need to change name to match original contigs
                         record.id = record.id.replace('VIRSorter_', '').replace('-circular', '').split('-cat_')[0]
+                        if 'gene' in record.id:
+                            record.id = record.id.split('_gene')[0]
+
                         record.description = ''
                         record.name = ''
                         adjusted_sequences.append(record)
