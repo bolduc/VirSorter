@@ -291,6 +291,7 @@ class VirSorterUtils:
                         record.id = record.id.replace('VIRSorter_', '').replace('-circular', '').split('-cat_')[0]
                         if 'gene' in record.id:
                             record.id = record.id.split('_gene')[0]
+                        record.id = record.id.rsplit('_', 1)[0]
 
                         record.description = ''
                         record.name = ''
