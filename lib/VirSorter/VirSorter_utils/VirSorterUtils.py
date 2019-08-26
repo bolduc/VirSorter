@@ -281,20 +281,36 @@ class VirSorterUtils:
                 gc_content = []
 
                 # Need stats for summary file
+                # Also need to adjust sequence name so binnedContig object can retrieve sequences
+                adjusted_sequences = []
                 with open(category_fp, 'rU') as category_fh:
                     for record in SeqIO.parse(category_fh, 'fasta'):
                         seq = record.seq
                         gc_content.append(SeqUtils.GC(seq))
                         genome_size += len(seq)
 
+                        # This is very dirty, but need to change name to match original contigs
+                        record.id = record.id.replace('VIRSorter_', '').replace('-circular', '').split('-cat_')[0]
+                        if 'gene' in record.id:
+                            record.id = record.id.split('_gene')[0]
+                        record.id = record.id.rsplit('_', 1)[0]
+
+                        record.description = ''
+                        record.name = ''
+                        adjusted_sequences.append(record)
+
                 if genome_size != 0:  # Empty file
 
                     summary_writer.writerow([dest_fn, '100%', genome_size, (sum(gc_content) / len(gc_content))])
 
                     print('Copying {} to results directory'.format(os.path.basename(category_fp)))
-                    # Yes, need both. One is to get file_links in report. Second is for maxbin BinnedContig
+                    # Yes, need both. One is to get file_links in report. Second is for binnedContigs object
                     shutil.copyfile(category_fp, dest_fp)
-                    shutil.copy2(category_fp, binned_contig_fp)
+
+                    # Write renamed sequences
+                    with open(binned_contig_fp, 'w') as binned_contig_fh:
+                        SeqIO.write(adjusted_sequences, binned_contig_fh, 'fasta')
+                    # shutil.copy2(category_fp, binned_contig_fp)
 
                     result = self.au.save_assembly_from_fasta(
                         {'file': {'path': dest_fp},
