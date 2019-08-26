@@ -106,6 +106,8 @@ class VirSorterUtils:
         params['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
 
         # Get contigs from 'assembly'
+
+        # 1 thing to note, this will only work for the Assembly type and not the Genome type.
         self.AssemblyUtil = AssemblyUtil(self.callback_url)
         genome_ret = self.AssemblyUtil.get_assembly_as_fasta({
             'ref': params['genomes']
