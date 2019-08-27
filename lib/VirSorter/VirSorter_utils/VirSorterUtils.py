@@ -15,6 +15,7 @@ from installed_clients.AssemblyUtilClient import AssemblyUtil
 from installed_clients.DataFileUtilClient import DataFileUtil as dfu
 from installed_clients.KBaseReportClient import KBaseReport
 from installed_clients.MetagenomeUtilsClient import MetagenomeUtils
+from installed_clients.WorkspaceClient import Workspace
 
 
 html_template = Template("""<!DOCTYPE html>
@@ -95,10 +96,24 @@ class VirSorterUtils:
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.mgu = MetagenomeUtils(self.callback_url)
         self.au = AssemblyUtil(self.callback_url)
+        self.ws = Workspace(config['workspace-url'], token=config['token'])
 
     def VirSorter_help(self):
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --help'
         self._run_command(command)
+
+    def get_fasta(self, ref):
+        # check type of object
+        obj_type = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0][2]
+        if 'assembly' in obj_type.lower():
+            self.assembly_ref = ref
+        elif 'kbasegenomes' in obj_type.lower():
+            data = self.ws.get_objects2({'objects': [{'ref': ref, 'included': ['assembly_ref'], 'strict_maps': 1}]})['data'][0]['data']
+            self.assembly_ref = data['assembly_ref']
+        else:
+            raise ValueError(f"Input reference {ref} is of type {obj_type}. Type KBaseGenomes.Genome "
+                              "or KBaseGenomeAnnotations.Assembly required.")
+        return self.au.get_assembly_as_fasta({'ref': self.assembly_ref})['path']
 
     def run_VirSorter(self, params):
 
@@ -106,16 +121,17 @@ class VirSorterUtils:
         params['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
 
         # Get contigs from 'assembly'
-
-        # 1 thing to note, this will only work for the Assembly type and not the Genome type.
-        self.AssemblyUtil = AssemblyUtil(self.callback_url)
-        genome_ret = self.AssemblyUtil.get_assembly_as_fasta({
-            'ref': params['genomes']
-        })
-
-        genome_fp = genome_ret['path']
+        genome_fp = self.get_fasta(params['genomes'])
 
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --data-dir /data/virsorter-data'
+
+        print('-'*80)
+        print('-'*80)
+        print('-'*80)
+        print(os.listdir('/usr/local/bin'))
+        print('-'*80)
+        print('-'*80)
+        print('-'*80)
 
         # Add in first args
         command += ' -f {} --db {}'.format(genome_fp, params['database'])
@@ -144,7 +160,7 @@ class VirSorterUtils:
 
         log('Start executing command:\n{}'.format(command))
         pipe = subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
-        output = pipe.communicate()[0]
+        output, err = pipe.communicate()
         exitCode = pipe.returncode
 
         if (exitCode == 0):
@@ -152,7 +168,8 @@ class VirSorterUtils:
                 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output))
         else:
             error_msg = 'Error running command:\n{}\n'.format(command)
-            error_msg += 'Exit Code: {}Output:\n{}'.format(exitCode, output)
+            error_msg += 'Exit Code: {}\nOutput:\n{}\nError: {}'.format(exitCode, output, err)
+            raise RuntimeError(error_msg)
 
     def _parse_summary(self, virsorter_global_fp):
         columns = ['Contig_id', 'Nb genes contigs', 'Fragment', 'Nb genes', 'Category', 'Nb phage hallmark genes',
@@ -160,17 +177,22 @@ class VirSorterUtils:
                    'Uncharacterized enrichment sig', 'Strand switch depletion sig', 'Short genes enrichment sig',
                    ]
 
-        with open(virsorter_global_fp, 'r') as vir_fh:
-            data = {}
-            category = ''
-            for line in vir_fh:
-                if line.startswith('## Contig_id'):
-                    continue
-                elif line.startswith('## '):  # If 'header' lines are consumed by 1st if, then remaining should be good
-                    category = line.split('## ')[-1].split(' -')[0]
-                else:
-                    values = line.strip().split(',')
-                    data[values[0]] = dict(zip(columns[1:], values[1:]))
+        try:
+            with open(virsorter_global_fp, 'r') as vir_fh:
+                data = {}
+                category = ''
+                for line in vir_fh:
+                    if line.startswith('## Contig_id'):
+                        continue
+                    elif line.startswith('## '):  # If 'header' lines are consumed by 1st if, then remaining should be good
+                        category = line.split('## ')[-1].split(' -')[0]
+                    else:
+                        values = line.strip().split(',')
+                        data[values[0]] = dict(zip(columns[1:], values[1:]))
+        except:
+            vir_path = os.path.join(os.getcwd(), 'virsorter-out')
+            files = os.listdir(vir_path)
+            raise RuntimeError(f"{virsorter_global_fp} is not a file. existing files {files}.")
 
         df = pd.DataFrame().from_dict(data, orient='index')
         df.index.name = columns[0]
@@ -203,6 +225,11 @@ class VirSorterUtils:
             final_html = direct_html[:start_pos + 8] + '\n' + new_text + direct_html[start_pos + 8:]
 
         return final_html
+
+    def get_assembly_contig_ids(self, assembly_ref):
+        """get contig ids from assembly_ref"""
+        contigs = self.ws.get_objects2({'objects': [{'ref': assembly_ref, 'included': ['contigs']}]})['data'][0]['data']['contigs']
+        return contigs.keys()
 
     def _generate_report(self, params):
         """
@@ -264,6 +291,9 @@ class VirSorterUtils:
         # of its features, but also to feed more easily into other tools (e.g. vConTACT)
         created_objects = []  # Will store the objects that go to the workspace
 
+        # load contig ids from the assembly input
+        assembly_contig_ids = self.get_assembly_contig_ids(self.assembly_ref)
+
         summary_fp = os.path.join(binned_contig_output_dir, 'VIRSorter.summary')  # Anything that ends in .summary
         with open(summary_fp, 'w') as summary_fh:
 
@@ -295,6 +325,21 @@ class VirSorterUtils:
                             record.id = record.id.split('_gene')[0]
                         record.id = record.id.rsplit('_', 1)[0]
 
+                        # here we make sure that the id's line up with contig ids in the input assembly object
+                        if record.id not in assembly_contig_ids:
+                            for cid in assembly_contig_ids:
+                                # first check if record.id is substring of current contig id,
+                                # then check if current contig id is substring of record.id
+                                # NOTE: this is not a perfect way of checking and will likely
+                                #       fail in some circumstances.
+                                #       A more complete check would be to make sure there is a 1:1
+                                #       mapping of contig id's in the assembly object as compared to
+                                #       the binned contig object (the fasta files defined here).
+                                if record.id in cid or cid in record.id:
+                                    record.id = cid
+                                    break
+
+
                         record.description = ''
                         record.name = ''
                         adjusted_sequences.append(record)
@@ -324,7 +369,7 @@ class VirSorterUtils:
         # Create BinnedContigs object, but 1st, a little metadata
         generate_binned_contig_param = {
             'file_directory': binned_contig_output_dir,
-            'assembly_ref': params.get('genomes'),  # assembly_ref
+            'assembly_ref': self.assembly_ref,  # assembly_ref
             'binned_contig_name': params.get('binned_contig_name'),
             'workspace_name': params['workspace_name']
         }

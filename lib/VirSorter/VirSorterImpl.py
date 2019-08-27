@@ -34,6 +34,7 @@ class VirSorter:
         #BEGIN_CONSTRUCTOR
         self.callback_url = os.environ['SDK_CALLBACK_URL']
         self.shared_folder = config['scratch']
+        config['token'] = os.environ['KB_AUTH_TOKEN']
         self.config = config
         #END_CONSTRUCTOR
         pass
