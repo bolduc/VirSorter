@@ -125,14 +125,6 @@ class VirSorterUtils:
 
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --data-dir /data/virsorter-data'
 
-        print('-'*80)
-        print('-'*80)
-        print('-'*80)
-        print(os.listdir('/usr/local/bin'))
-        print('-'*80)
-        print('-'*80)
-        print('-'*80)
-
         # Add in first args
         command += ' -f {} --db {}'.format(genome_fp, params['database'])
 

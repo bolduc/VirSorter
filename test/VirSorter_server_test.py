@@ -3,13 +3,14 @@ import os
 import time
 import unittest
 from configparser import ConfigParser
+from Bio import SeqIO
 
 from VirSorter.VirSorterImpl import VirSorter
 from VirSorter.VirSorterServer import MethodContext
 from VirSorter.authclient import KBaseAuth as _KBaseAuth
 
 from installed_clients.WorkspaceClient import Workspace
-
+from installed_clients.AssemblyUtilClient import AssemblyUtil
 
 class VirSorterTest(unittest.TestCase):
 
@@ -42,6 +43,7 @@ class VirSorterTest(unittest.TestCase):
         cls.serviceImpl = VirSorter(cls.cfg)
         cls.scratch = cls.cfg['scratch']
         cls.callback_url = os.environ['SDK_CALLBACK_URL']
+        cls.au = AssemblyUtil(cls.callback_url)
 
     @classmethod
     def tearDownClass(cls):
@@ -67,6 +69,22 @@ class VirSorterTest(unittest.TestCase):
     def getContext(self):
         return self.__class__.ctx
 
+    def check_if_contig_ids_align(self, assembly_ref, binned_ref):
+        """make sure all bin ids show up in assembly ids"""
+        # 1.) get assembly object ids
+        fasta_path = self.au.get_assembly_as_fasta({'ref': assembly_ref})['path']
+        assembly_ids = []
+        for record in SeqIO.parse(fasta_path, 'fasta'):
+            assembly_ids.append(record.id)
+        # 2.) get binned contig object ids
+        binned_data = self.wsClient.get_objects2({'objects':[{'ref': binned_ref}]})['data'][0]['data']
+        bin_ids = []
+        for b in binned_data['bins']:
+            bin_ids += b['contigs'].keys()
+        for id_ in bin_ids:
+            self.assertTrue(id_ in assembly_ids, msg=f"{id_} contig id in BinnedContig object could "
+                                                      "not be found in corresponding Assembly object.")
+
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
     def test_your_method(self):
         # Prepare test objects in workspace if needed using
@@ -78,9 +96,10 @@ class VirSorterTest(unittest.TestCase):
         #
         # Check returned data with
         # self.assertEqual(ret[...], ...) or other unittest methods
+        assembly_ref = "31160/20/1"
         ret = self.getImpl().run_VirSorter(self.getContext(), {
             'workspace_name': self.getWsName(),
-            'genomes': '31160/20/1',
+            'genomes': assembly_ref,
             'database': '1',
             'virome': '0',
             'diamond': '1',
@@ -88,4 +107,5 @@ class VirSorterTest(unittest.TestCase):
             'no_c': '1',
             'binned_contig_name': 'binned_contig_name'
 
-        })
+        })[0]
+        self.check_if_contig_ids_align(assembly_ref, ret['binned_contig_obj_ref'])
