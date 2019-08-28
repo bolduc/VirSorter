@@ -15,12 +15,6 @@ ENV PATH=/miniconda/bin:${PATH} PERL5LIB=/miniconda/lib/perl5/site_perl/5.22.0/:
 ## Install dependencies
 RUN apt-get update && apt-get install -y libdb-dev curl git build-essential
 
-#RUN curl -LO http://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-#	bash Miniconda3-latest-Linux-x86_64.sh -b -f -p /miniconda && \
-#	rm Miniconda3-latest-Linux-x86_64.sh
-
-#RUN conda install -y nose jinja2
-
 RUN conda install -y -c bioconda mcl=14.137 muscle blast perl-bioperl perl-file-which hmmer=3.1b2 \
     perl-parallel-forkmanager perl-list-moreutils diamond pyparsing
 
