@@ -77,13 +77,17 @@ class VirSorterTest(unittest.TestCase):
         for record in SeqIO.parse(fasta_path, 'fasta'):
             assembly_ids.append(record.id)
         # 2.) get binned contig object ids
-        binned_data = self.wsClient.get_objects2({'objects':[{'ref': binned_ref}]})['data'][0]['data']
+        binned_data = self.wsClient.get_objects2({'objects': [{'ref': binned_ref}]})['data'][0]['data']
         bin_ids = []
         for b in binned_data['bins']:
             bin_ids += b['contigs'].keys()
+        # print("BINS")
+        # print(bin_ids)
+        # print('ASSEMBLY')
+        # print(assembly_ids)
         for id_ in bin_ids:
             self.assertTrue(id_ in assembly_ids, msg=f"{id_} contig id in BinnedContig object could "
-                                                      "not be found in corresponding Assembly object.")
+                                                     f"not be found in corresponding Assembly object.")
 
     # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
     def test_your_method(self):
@@ -97,15 +101,17 @@ class VirSorterTest(unittest.TestCase):
         # Check returned data with
         # self.assertEqual(ret[...], ...) or other unittest methods
         assembly_ref = "31160/20/1"
+        added_genomes = "31160/45/1"
         ret = self.getImpl().run_VirSorter(self.getContext(), {
             'workspace_name': self.getWsName(),
             'genomes': assembly_ref,
+            'add_genomes': added_genomes,
             'database': '1',
             'virome': '0',
-            'diamond': '1',
+            'diamond': '0',
             'keep_db': '1',
-            'no_c': '1',
-            'binned_contig_name': 'binned_contig_name'
+            'no_c': '0',
+            'binned_contig_name': 'binnedContig'
 
         })[0]
         self.check_if_contig_ids_align(assembly_ref, ret['binned_contig_obj_ref'])

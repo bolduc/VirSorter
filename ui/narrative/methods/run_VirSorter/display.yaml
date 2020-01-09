@@ -38,7 +38,7 @@ parameters :
         short-hint: |
             Reference database to use in identifying viral sequences
         long-hint: |
-            Reference database to use in identifying viral sequences
+            Reference database to use in identifying viral sequences, can either be RefSeq or Viromes. Use Viromes unless you really don't trust enivornmental data.
 
     add_genomes:
         ui-name: |
@@ -52,9 +52,9 @@ parameters :
         ui-name: |
             Enable virome decontamination
         short-hint: |
-            Flag to enable virome decontamination
+            Run VIRSorter assuming that most data is viral
         long-hint: |
-            Use for mostly viral datasets where generic microbial metrics will be used to calculate enrichments
+            Run VIRSorter for datasets that are mostly viral to force use of generic metrics of enrichment instead of calculated from the dataset.
 
     diamond:
         ui-name: |
@@ -70,7 +70,7 @@ parameters :
         short-hint: |
             Keep HMM+BLAST DBs created from added phage sequences
         long-hint: |
-            The first parameter that needs to be entered to drive the method. This might be the first of many.
+            Keep HMM+BLAST DBsn from added phage sequences, useful if you have custom phages that you want to include in several different analyses and want to use VIRSorter against them.
 
     no_c:
         ui-name: |
@@ -78,7 +78,7 @@ parameters :
         short-hint: |
             Flag to enable different calculation of enrichment statistics
         long-hint: |
-            Flag to enable different calculation of enrichment statistics
+            If no viruses are predicted, enable to force VIRSorter to use a perl (vs C) script to calculate enrichment statistics
 
     binned_contig_name:
         ui-name: |

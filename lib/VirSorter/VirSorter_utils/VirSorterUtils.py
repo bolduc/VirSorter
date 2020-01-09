@@ -105,15 +105,33 @@ class VirSorterUtils:
     def get_fasta(self, ref):
         # check type of object
         obj_type = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0][2]
+        print('OBJECTS')
+        print(self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'])
         if 'assembly' in obj_type.lower():
             self.assembly_ref = ref
         elif 'kbasegenomes' in obj_type.lower():
-            data = self.ws.get_objects2({'objects': [{'ref': ref, 'included': ['assembly_ref'], 'strict_maps': 1}]})['data'][0]['data']
+            data = self.ws.get_objects2({'objects': [
+                {'ref': ref, 'included': ['assembly_ref'], 'strict_maps': 1}]})['data'][0]['data']
             self.assembly_ref = data['assembly_ref']
         else:
-            raise ValueError(f"Input reference {ref} is of type {obj_type}. Type KBaseGenomes.Genome "
-                              "or KBaseGenomeAnnotations.Assembly required.")
+            raise ValueError(f"Input reference {ref} is of type {obj_type}. Type KBaseGenomes.Genome or "
+                             f"KBaseGenomeAnnotations.Assembly required.")
         return self.au.get_assembly_as_fasta({'ref': self.assembly_ref})['path']
+
+    def get_fasta_fp(self, ref):
+        # Separate out another fp so that assembly_ref isn't overwritten when grabbing assembly ref
+        # Need to get fasta fp of 'potential' added genomes, which are also "assembly refs", but not THE assembly ref
+        obj_type = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0][2]
+        if 'assembly' in obj_type.lower():
+            self.genomes_ref = ref
+        elif 'kbasegenomes' in obj_type.lower():
+            data = self.ws.get_objects2({'objects': [
+                {'ref': ref, 'included': ['assembly_ref'], 'strict_maps': 1}]})['data'][0]['data']
+            self.genomes_ref = data['assembly_ref']
+        else:
+            raise ValueError(f"Input reference {ref} is of type {obj_type}. Type KBaseGenomes.Genome or "
+                             f"KBaseGenomeAnnotations.Assembly required.")
+        return self.au.get_assembly_as_fasta({'ref': self.genomes_ref})['path']
 
     def run_VirSorter(self, params):
 
@@ -126,7 +144,12 @@ class VirSorterUtils:
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --data-dir /data/virsorter-data'
 
         # Add in first args
-        command += ' -f {} --db {}'.format(genome_fp, params['database'])
+        command += f' -f {genome_fp} --db {params["database"]}'
+
+        # Check if additional genomes were submitted
+        if 'add_genomes' in params:
+            add_genomes_fp = self.get_fasta_fp(params['add_genomes'])
+            command += f' --cp {add_genomes_fp}'
 
         bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
 
@@ -135,7 +158,7 @@ class VirSorterUtils:
                 if bool_arg == 'keep_db':
                     bool_arg = 'keep-db'
 
-                command += ' --{}'.format(bool_arg)
+                command += f' --{bool_arg}'
 
         self._run_command(command)
 
@@ -155,7 +178,7 @@ class VirSorterUtils:
         output, err = pipe.communicate()
         exitCode = pipe.returncode
 
-        if (exitCode == 0):
+        if exitCode == 0:
             log('Executed command:\n{}\n'.format(command) +
                 'Exit Code: {}\nOutput:\n{}'.format(exitCode, output))
         else:
@@ -313,13 +336,13 @@ class VirSorterUtils:
 
                         # This is very dirty, but need to change name to match original contigs
                         record.id = record.id.replace('VIRSorter_', '').replace('-circular', '').split('-cat_')[0]
-                        if 'gene' in record.id:
+                        if 'gene' in record.id:  # Prophage
                             record.id = record.id.split('_gene')[0]
                         record.id = record.id.rsplit('_', 1)[0]
 
                         # here we make sure that the id's line up with contig ids in the input assembly object
                         if record.id not in assembly_contig_ids:
-                            for cid in assembly_contig_ids:
+                            for assembly_contig_id in assembly_contig_ids:
                                 # first check if record.id is substring of current contig id,
                                 # then check if current contig id is substring of record.id
                                 # NOTE: this is not a perfect way of checking and will likely
@@ -327,10 +350,9 @@ class VirSorterUtils:
                                 #       A more complete check would be to make sure there is a 1:1
                                 #       mapping of contig id's in the assembly object as compared to
                                 #       the binned contig object (the fasta files defined here).
-                                if record.id in cid or cid in record.id:
-                                    record.id = cid
+                                if (record.id in assembly_contig_id) or (assembly_contig_id in record.id):
+                                    record.id = assembly_contig_id
                                     break
-
 
                         record.description = ''
                         record.name = ''
@@ -347,7 +369,6 @@ class VirSorterUtils:
                     # Write renamed sequences
                     with open(binned_contig_fp, 'w') as binned_contig_fh:
                         SeqIO.write(adjusted_sequences, binned_contig_fh, 'fasta')
-                    # shutil.copy2(category_fp, binned_contig_fp)
 
                     result = self.au.save_assembly_from_fasta(
                         {'file': {'path': dest_fp},
@@ -389,10 +410,12 @@ class VirSorterUtils:
             'shock_id': report_shock_id,
             'name': os.path.basename(html_fp),
             'label': os.path.basename(html_fp),
-            'description': 'HTML summary report for VIRSorter'
+            'description': 'HTML summary report for VIRSorter-predicted viral genomes.'
         }]
 
-        report_params = {'message': 'VIRSorter Results!',
+        report_params = {'message': 'Here are the results from your VIRSorter run. Above, you\'ll find a report with '
+                                    'all the identified (putative) viral genomes, and below, links to the report as '
+                                    'well as files generated.',
                          'workspace_name': params['workspace_name'],
                          'html_links': html_report,
                          'direct_html_link_index': 0,
