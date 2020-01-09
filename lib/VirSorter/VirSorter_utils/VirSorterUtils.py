@@ -105,8 +105,6 @@ class VirSorterUtils:
     def get_fasta(self, ref):
         # check type of object
         obj_type = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0][2]
-        print('OBJECTS')
-        print(self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'])
         if 'assembly' in obj_type.lower():
             self.assembly_ref = ref
         elif 'kbasegenomes' in obj_type.lower():
@@ -138,6 +136,9 @@ class VirSorterUtils:
         params['SDK_CALLBACK_URL'] = self.callback_url
         params['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
 
+        print('PARAMS')
+        print(params)
+
         # Get contigs from 'assembly'
         genome_fp = self.get_fasta(params['genomes'])
 
@@ -147,7 +148,7 @@ class VirSorterUtils:
         command += f' -f {genome_fp} --db {params["database"]}'
 
         # Check if additional genomes were submitted
-        if 'add_genomes' in params:
+        if params['add_genomes'] and 'add_genomes' in params:
             add_genomes_fp = self.get_fasta_fp(params['add_genomes'])
             command += f' --cp {add_genomes_fp}'
 
