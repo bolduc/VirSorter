@@ -136,9 +136,6 @@ class VirSorterUtils:
         params['SDK_CALLBACK_URL'] = self.callback_url
         params['KB_AUTH_TOKEN'] = os.environ['KB_AUTH_TOKEN']
 
-        print('PARAMS')
-        print(params)
-
         # Get contigs from 'assembly'
         genome_fp = self.get_fasta(params['genomes'])
 
@@ -148,7 +145,7 @@ class VirSorterUtils:
         command += f' -f {genome_fp} --db {params["database"]}'
 
         # Check if additional genomes were submitted
-        if params['add_genomes'] and 'add_genomes' in params:
+        if params['add_genomes'] is not None:
             add_genomes_fp = self.get_fasta_fp(params['add_genomes'])
             command += f' --cp {add_genomes_fp}'
 
