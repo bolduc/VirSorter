@@ -81,10 +81,6 @@ class VirSorterTest(unittest.TestCase):
         bin_ids = []
         for b in binned_data['bins']:
             bin_ids += b['contigs'].keys()
-        # print("BINS")
-        # print(bin_ids)
-        # print('ASSEMBLY')
-        # print(assembly_ids)
         for id_ in bin_ids:
             self.assertTrue(id_ in assembly_ids, msg=f"{id_} contig id in BinnedContig object could "
                                                      f"not be found in corresponding Assembly object.")

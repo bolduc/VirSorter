@@ -116,20 +116,20 @@ class VirSorterUtils:
                              f"KBaseGenomeAnnotations.Assembly required.")
         return self.au.get_assembly_as_fasta({'ref': self.assembly_ref})['path']
 
-    def get_fasta_fp(self, ref):
+    # def get_fasta_fp(self, ref):
         # Separate out another fp so that assembly_ref isn't overwritten when grabbing assembly ref
         # Need to get fasta fp of 'potential' added genomes, which are also "assembly refs", but not THE assembly ref
-        obj_type = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0][2]
-        if 'assembly' in obj_type.lower():
-            self.genomes_ref = ref
-        elif 'kbasegenomes' in obj_type.lower():
-            data = self.ws.get_objects2({'objects': [
-                {'ref': ref, 'included': ['assembly_ref'], 'strict_maps': 1}]})['data'][0]['data']
-            self.genomes_ref = data['assembly_ref']
-        else:
-            raise ValueError(f"Input reference {ref} is of type {obj_type}. Type KBaseGenomes.Genome or "
-                             f"KBaseGenomeAnnotations.Assembly required.")
-        return self.au.get_assembly_as_fasta({'ref': self.genomes_ref})['path']
+        # obj_type = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0][2]
+        # if 'assembly' in obj_type.lower():
+        #     self.genomes_ref = ref
+        # elif 'kbasegenomes' in obj_type.lower():
+        #     data = self.ws.get_objects2({'objects': [
+        #         {'ref': ref, 'included': ['assembly_ref'], 'strict_maps': 1}]})['data'][0]['data']
+        #     self.genomes_ref = data['assembly_ref']
+        # else:
+        #     raise ValueError(f"Input reference {ref} is of type {obj_type}. Type KBaseGenomes.Genome or "
+        #                      f"KBaseGenomeAnnotations.Assembly required.")
+        # return self.au.get_assembly_as_fasta({'ref': self.genomes_ref})['path']
 
     def run_VirSorter(self, params):
 
