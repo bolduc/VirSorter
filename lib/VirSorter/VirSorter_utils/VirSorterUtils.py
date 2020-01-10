@@ -103,33 +103,18 @@ class VirSorterUtils:
         self._run_command(command)
 
     def get_fasta(self, ref):
-        # check type of object
+        # check type of object, i.e KBaseGenomeAnnotations.Assembly-3.0
         obj_type = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0][2]
         if 'assembly' in obj_type.lower():
-            self.assembly_ref = ref
+            genome_ref = ref
         elif 'kbasegenomes' in obj_type.lower():
             data = self.ws.get_objects2({'objects': [
                 {'ref': ref, 'included': ['assembly_ref'], 'strict_maps': 1}]})['data'][0]['data']
-            self.assembly_ref = data['assembly_ref']
+            genome_ref = data['assembly_ref']
         else:
             raise ValueError(f"Input reference {ref} is of type {obj_type}. Type KBaseGenomes.Genome or "
                              f"KBaseGenomeAnnotations.Assembly required.")
-        return self.au.get_assembly_as_fasta({'ref': self.assembly_ref})['path']
-
-    # def get_fasta_fp(self, ref):
-        # Separate out another fp so that assembly_ref isn't overwritten when grabbing assembly ref
-        # Need to get fasta fp of 'potential' added genomes, which are also "assembly refs", but not THE assembly ref
-        # obj_type = self.ws.get_object_info3({'objects': [{'ref': ref}]})['infos'][0][2]
-        # if 'assembly' in obj_type.lower():
-        #     self.genomes_ref = ref
-        # elif 'kbasegenomes' in obj_type.lower():
-        #     data = self.ws.get_objects2({'objects': [
-        #         {'ref': ref, 'included': ['assembly_ref'], 'strict_maps': 1}]})['data'][0]['data']
-        #     self.genomes_ref = data['assembly_ref']
-        # else:
-        #     raise ValueError(f"Input reference {ref} is of type {obj_type}. Type KBaseGenomes.Genome or "
-        #                      f"KBaseGenomeAnnotations.Assembly required.")
-        # return self.au.get_assembly_as_fasta({'ref': self.genomes_ref})['path']
+        return self.au.get_assembly_as_fasta({'ref': genome_ref})['path']
 
     def run_VirSorter(self, params):
 
@@ -139,24 +124,15 @@ class VirSorterUtils:
         # Get contigs from 'assembly'
         genome_fp = self.get_fasta(params['genomes'])
 
-        # # Get contigs from 'assembly'
-        #         self.AssemblyUtil = AssemblyUtil(self.callback_url)
-        #         genome_ret = self.AssemblyUtil.get_assembly_as_fasta({
-        #             'ref': params['genomes']
-        #         })
-
-        genome_ret = self.au.get_assembly_as_fasta({
-                        'ref': params['genomes']})['path']
-
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --data-dir /data/virsorter-data'
 
         # Add in first args
-        command += f' -f {genome_ret} --db {params["database"]}'
+        command += f' -f {genome_fp} --db {params["database"]}'
 
         # Check if additional genomes were submitted
-        # if params['add_genomes'] is not None:
-        #     add_genomes_fp = self.get_fasta_fp(params['add_genomes'])
-        #     command += f' --cp {add_genomes_fp}'
+        if params['add_genomes'] is not None:
+            add_genomes_fp = self.get_fasta(params['add_genomes'])
+            command += f' --cp {add_genomes_fp}'
 
         bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
 
@@ -291,7 +267,7 @@ class VirSorterUtils:
             'path': pred_fna_tgz_fp,
             'name': os.path.basename(pred_fna_tgz_fp),
             'label': os.path.basename(pred_fna_tgz_fp),
-            'description': 'FASTA-formatted nucleotide sequences of VIRSorter predicted phage'
+            'description': 'FASTA-formatted nucleotide sequences of VIRSorter predicted viruses'
         })
 
         pred_gb_tgz_fp = os.path.join(output_dir, 'VIRSorter_predicted_viral_gb.tar.gz')
@@ -302,7 +278,7 @@ class VirSorterUtils:
             'path': pred_gb_tgz_fp,
             'name': os.path.basename(pred_gb_tgz_fp),
             'label': os.path.basename(pred_gb_tgz_fp),
-            'description': 'Genbank-formatted sequences of VIRSorter predicted phage'
+            'description': 'Genbank-formatted sequences of VIRSorter predicted viruses'
         })
 
         # To create BinnedContig, need to create another directory with each of the "bins" as separate files?
@@ -314,7 +290,8 @@ class VirSorterUtils:
         created_objects = []  # Will store the objects that go to the workspace
 
         # load contig ids from the assembly input
-        assembly_contig_ids = self.get_assembly_contig_ids(self.assembly_ref)
+        # assembly_contig_ids = self.get_assembly_contig_ids(self.assembly_ref)
+        assembly_contig_ids = self.get_assembly_contig_ids(params['genomes'])  # Will fail for Genome
 
         summary_fp = os.path.join(binned_contig_output_dir, 'VIRSorter.summary')  # Anything that ends in .summary
         with open(summary_fp, 'w') as summary_fh:
@@ -389,8 +366,8 @@ class VirSorterUtils:
         # Create BinnedContigs object, but 1st, a little metadata
         generate_binned_contig_param = {
             'file_directory': binned_contig_output_dir,
-            'assembly_ref': self.assembly_ref,  # assembly_ref
-            'binned_contig_name': params.get('binned_contig_name'),
+            'assembly_ref': params['genomes'],  # params.get('genomes'), self.assembly_ref
+            'binned_contig_name': params['binned_contig_name'],
             'workspace_name': params['workspace_name']
         }
         binned_contig_object_ref = self.mgu.file_to_binned_contigs(
