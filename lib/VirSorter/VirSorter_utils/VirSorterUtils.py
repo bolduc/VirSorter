@@ -139,10 +139,20 @@ class VirSorterUtils:
         # Get contigs from 'assembly'
         genome_fp = self.get_fasta(params['genomes'])
 
+        # # Get contigs from 'assembly'
+        #         self.AssemblyUtil = AssemblyUtil(self.callback_url)
+        #         genome_ret = self.AssemblyUtil.get_assembly_as_fasta({
+        #             'ref': params['genomes']
+        #         })
+
+        genome_ret = self.au.get_assembly_as_fasta({
+                        'ref': params['genomes']
+                    })
+
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --data-dir /data/virsorter-data'
 
         # Add in first args
-        command += f' -f {genome_fp} --db {params["database"]}'
+        command += f' -f {genome_ret} --db {params["database"]}'
 
         # Check if additional genomes were submitted
         # if params['add_genomes'] is not None:
@@ -375,7 +385,7 @@ class VirSorterUtils:
                          })
 
                     created_objects.append({"ref": result,
-                                            "description": "AssembledContigs from VIRSorter"})
+                                            "description": "KBase Assembly object from VIRSorter"})
 
         # Create BinnedContigs object, but 1st, a little metadata
         generate_binned_contig_param = {
