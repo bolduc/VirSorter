@@ -146,8 +146,7 @@ class VirSorterUtils:
         #         })
 
         genome_ret = self.au.get_assembly_as_fasta({
-                        'ref': params['genomes']
-                    })
+                        'ref': params['genomes']})['path']
 
         command = 'wrapper_phage_contigs_sorter_iPlant.pl --data-dir /data/virsorter-data'
 
