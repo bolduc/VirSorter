@@ -26,11 +26,11 @@ suggestions:
 parameters :
     genomes :
         ui-name : |
-            Input FASTA file
+            Input file
         short-hint : |
-            FASTA file containing microbial or viral metagenomes
+            A KBase Assembly or genome object containing microbial or viral (meta)genomes
         long-hint  : |
-            FASTA file containing microbial or viral metagenomes
+            A KBase Assembly or genome object containing microbial or viral (meta)genomes
 
     database:
         ui-name: |
