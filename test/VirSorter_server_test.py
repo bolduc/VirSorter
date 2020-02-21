@@ -85,7 +85,23 @@ class VirSorterTest(unittest.TestCase):
             self.assertTrue(id_ in assembly_ids, msg=f"{id_} contig id in BinnedContig object could "
                                                      f"not be found in corresponding Assembly object.")
 
-    # NOTE: According to Python unittest naming rules test method names should start from 'test'. # noqa
+    # @unittest.skip('x')
+    def test_without_add_genomes(self):
+        assembly_ref = "31160/20/1"
+        ret = self.getImpl().run_VirSorter(self.getContext(), {
+            "workspace_name": self.getWsName(),
+            "genomes": assembly_ref,
+            "add_genomes": "",
+            'database': '1',
+            'virome': '0',
+            'diamond': '0',
+            'keep_db': '1',
+            'no_c': '0',
+            'binned_contig_name': 'binnedContig2'
+        })[0]
+        self.check_if_contig_ids_align(assembly_ref, ret['binned_contig_obj_ref'])
+
+    # @unittest.skip('x')
     def test_your_method(self):
         # Prepare test objects in workspace if needed using
         # self.getWsClient().save_objects({'workspace': self.getWsName(),

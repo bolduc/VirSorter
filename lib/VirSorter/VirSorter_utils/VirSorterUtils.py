@@ -130,7 +130,7 @@ class VirSorterUtils:
         command += f' -f {genome_fp} --db {params["database"]}'
 
         # Check if additional genomes were submitted
-        if params['add_genomes'] is not None:
+        if params.get('add_genomes'):
             add_genomes_fp = self.get_fasta(params['add_genomes'])
             command += f' --cp {add_genomes_fp}'
 
