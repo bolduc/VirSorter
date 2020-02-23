@@ -6,11 +6,10 @@ MAINTAINER KBase Developer
 # install line here, a git checkout to download code, or run any other
 # installation scripts.
 
-## docker build -t bolduc/virsorter .
-## docker run --rm -v $(pwd):/wdir -w /wdir bolduc/virsorter:latest -f Contigs.fasta -db 1 --ncpu 4 --data-dir /virsorter-data
-
 ## Prepare the environment variables
 ENV PATH=/miniconda/bin:${PATH} PERL5LIB=/miniconda/lib/perl5/site_perl/5.22.0/:${PERL5LIB}
+
+RUN echo "Start of Dockerbuild!"
 
 ## Install dependencies
 RUN apt-get update && apt-get install -y libdb-dev curl git build-essential
@@ -19,7 +18,6 @@ RUN conda install -y -c bioconda mcl=14.137 muscle blast perl-bioperl perl-file-
     perl-parallel-forkmanager perl-list-moreutils diamond pyparsing
 
 ## Keeping separate, although not very Docker-kosher, as these are packages not installed in base image???
-
 
 RUN pip install jsonrpcbase pandas nose jinja2
 
