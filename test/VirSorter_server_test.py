@@ -117,8 +117,8 @@ class VirSorterTest(unittest.TestCase):
         ret = self.getImpl().run_VirSorter(self.getContext(), {
             'workspace_name': self.getWsName(),
             'genomes': assembly_ref,
-            # 'add_genomes': None,
-            'add_genomes': added_genomes,
+            'add_genomes': None,
+            # 'add_genomes': added_genomes,
             'database': '1',
             'virome': '0',
             'diamond': '0',

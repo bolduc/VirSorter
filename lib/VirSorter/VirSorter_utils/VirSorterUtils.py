@@ -132,6 +132,7 @@ class VirSorterUtils:
         # Check if additional genomes were submitted
         if params.get('add_genomes'):
             add_genomes_fp = self.get_fasta(params['add_genomes'])
+            print(f'Added genomes DETECTED: {add_genomes_fp}')
             command += f' --cp {add_genomes_fp}'
 
         bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
@@ -242,6 +243,8 @@ class VirSorterUtils:
         # Output directory should be $PWD/virsorter-out - ASSUMES that's the output location
         virsorter_outdir = os.path.join(os.getcwd(), 'virsorter-out')
 
+        print(f'VIRSorter output directory contents: {os.listdir(virsorter_outdir)}')
+
         # Replacing individual download files with BinnedContigs
 
         # kb_deseq adds output files, then builds report files and sends all of them to the workspace
@@ -253,6 +256,10 @@ class VirSorterUtils:
         pred_gbs = glob.glob(os.path.join(virsorter_outdir, 'Predicted_viral_sequences/VIRSorter_*.gb'))
         # Summary 'table'
         glob_signal = os.path.join(virsorter_outdir, 'VIRSorter_global-phage-signal.csv')
+
+        print('Identified the following predicted viral sequences:\n{}'.format('\n\t'.join(pred_fnas)))
+
+        print(f'Identified the global phage signal: {glob_signal}')
 
         # Make output directory
         output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
@@ -270,6 +277,10 @@ class VirSorterUtils:
             'description': 'FASTA-formatted nucleotide sequences of VIRSorter predicted viruses'
         })
 
+        if os.path.exists(pred_fna_tgz_fp):
+            print(f'Generated the following gzipped version of the predicted viral sequences in FASTA format: '
+                  f'{pred_fna_tgz_fp}')
+
         pred_gb_tgz_fp = os.path.join(output_dir, 'VIRSorter_predicted_viral_gb.tar.gz')
         with tarfile.open(pred_gb_tgz_fp, 'w:gz') as pred_gb_tgz_fh:
             for pred_gb in pred_gbs:
@@ -280,6 +291,10 @@ class VirSorterUtils:
             'label': os.path.basename(pred_gb_tgz_fp),
             'description': 'Genbank-formatted sequences of VIRSorter predicted viruses'
         })
+
+        if os.path.exists(pred_gb_tgz_fp):
+            print(f'Generated the following gzipped version of the predicted viral sequences in Genbank format: '
+                  f'{pred_gb_tgz_fp}')
 
         # To create BinnedContig, need to create another directory with each of the "bins" as separate files?
         binned_contig_output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
