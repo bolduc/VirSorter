@@ -259,7 +259,19 @@ class VirSorterUtils:
 
         print('Identified the following predicted viral sequences:\n{}'.format('\n\t'.join(pred_fnas)))
 
-        print(f'Identified the global phage signal: {glob_signal}')
+        if len(pred_fnas) == 0:
+            print(f"Unable to find predicted viral sequences, here are the directory's content:\n"
+                  f"{os.listdir(os.path.join(virsorter_outdir, 'Predicted_viral_sequences'))}")
+
+        if os.path.exists(glob_signal):
+            print(f'Identified the global phage signal: {glob_signal}')
+
+            with open(glob_signal) as glob_signal_fh:
+                head = [next(glob_signal_fh) for x in range(5)]
+            print(f'The first 5 lines are: {head}')
+
+        else:
+            print('Unable to find the global phage signal file. Was there an error during the run?')
 
         # Make output directory
         output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
