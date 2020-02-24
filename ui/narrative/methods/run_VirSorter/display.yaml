@@ -52,7 +52,7 @@ parameters :
         ui-name: |
             Enable virome decontamination
         short-hint: |
-            Run VIRSorter assuming that most data is viral
+            Run VIRSorter when most of the data is likely from viruses
         long-hint: |
             Run VIRSorter for datasets that are mostly viral to force use of generic metrics of enrichment instead of calculated from the dataset.
 
@@ -76,9 +76,9 @@ parameters :
         ui-name: |
             Use if no predicted viruses
         short-hint: |
-            Flag to enable different calculation of enrichment statistics
+            Flag to enable different calculation of enrichment statistics, uses a slower perl script for calculations
         long-hint: |
-            If no viruses are predicted, enable to force VIRSorter to use a perl (vs C) script to calculate enrichment statistics
+            If no viruses are predicted, enable to force VIRSorter to use a perl (vs C) script to calculate enrichment statistics. This is slower, but more accurate.
 
     binned_contig_name:
         ui-name: |

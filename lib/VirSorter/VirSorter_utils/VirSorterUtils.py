@@ -264,14 +264,33 @@ class VirSorterUtils:
                   f"{os.listdir(os.path.join(virsorter_outdir, 'Predicted_viral_sequences'))}")
 
         if os.path.exists(glob_signal):
+
             print(f'Identified the global phage signal: {glob_signal}')
 
-            with open(glob_signal) as glob_signal_fh:
-                head = [next(glob_signal_fh) for x in range(5)]
-            print(f'The first 5 lines are: {head}')
+            lines = -1  # Don't count header
+            with open(glob_signal) as fh:
+                for ln in fh:
+                    lines += 1
+
+            if lines == 0:
+                print('But it is EMPTY!')
 
         else:
             print('Unable to find the global phage signal file. Was there an error during the run?')
+
+        # Append error and out files from VIRSorter
+        output_files.append({
+            'path': os.path.join(virsorter_outdir, 'logs/err'),
+            'name': 'VIRSorter_err',
+            'label': 'VIRSorter_err',
+            'description': 'VIRSorter error log file, generated from the tool itself.'
+        })
+        output_files.append({
+            'path': os.path.join(virsorter_outdir, 'logs/out'),
+            'name': 'VIRSorter_out',
+            'label': 'VIRSorter_out',
+            'description': 'VIRSorter output log file, generated from the tool itself.'
+        })
 
         # Make output directory
         output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
