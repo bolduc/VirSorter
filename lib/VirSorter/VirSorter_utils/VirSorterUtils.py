@@ -138,7 +138,7 @@ class VirSorterUtils:
         bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
 
         for bool_arg in bool_args:
-            if params[bool_arg] == 1:  # 0 is true and therefore run
+            if params[bool_arg] == 0:  # 0 is true and therefore run
                 if bool_arg == 'keep_db':
                     bool_arg = 'keep-db'
 
@@ -279,18 +279,26 @@ class VirSorterUtils:
             print('Unable to find the global phage signal file. Was there an error during the run?')
 
         # Append error and out files from VIRSorter
-        output_files.append({
-            'path': os.path.join(virsorter_outdir, 'logs/err'),
-            'name': 'VIRSorter_err',
-            'label': 'VIRSorter_err',
-            'description': 'VIRSorter error log file, generated from the tool itself.'
-        })
-        output_files.append({
-            'path': os.path.join(virsorter_outdir, 'logs/out'),
-            'name': 'VIRSorter_out',
-            'label': 'VIRSorter_out',
-            'description': 'VIRSorter output log file, generated from the tool itself.'
-        })
+        err_fp = os.path.join(virsorter_outdir, 'logs/err')
+        # if os.path.exists(err_fp):
+        #     output_files.append({
+        #         'path': os.path.join(virsorter_outdir, 'logs/err'),
+        #         'name': 'VIRSorter_err',
+        #         'label': 'VIRSorter_err',
+        #         'description': 'VIRSorter error log file, generated from the tool itself.'
+        #     })
+        out_fp = os.path.join(virsorter_outdir, 'logs/out')
+        # if os.path.exists(out_fp):
+        #     output_files.append({
+        #         'path': os.path.join(virsorter_outdir, 'logs/out'),
+        #         'name': 'VIRSorter_out',
+        #         'label': 'VIRSorter_out',
+        #         'description': 'VIRSorter output log file, generated from the tool itself.'
+        #     })
+
+        if not (os.path.exists(err_fp) or os.path.exists(out_fp)):
+            print('Unable to find err and/or out files in LOG directory, contents:')
+            print(os.listdir(os.path.join(virsorter_outdir, 'logs')))
 
         # Make output directory
         output_dir = os.path.join(self.scratch, str(uuid.uuid4()))
@@ -309,7 +317,7 @@ class VirSorterUtils:
         })
 
         if os.path.exists(pred_fna_tgz_fp):
-            print(f'Generated the following gzipped version of the predicted viral sequences in FASTA format: '
+            print(f'Generated gzipped version of the predicted viral sequences in FASTA format: '
                   f'{pred_fna_tgz_fp}')
 
         pred_gb_tgz_fp = os.path.join(output_dir, 'VIRSorter_predicted_viral_gb.tar.gz')
@@ -324,7 +332,7 @@ class VirSorterUtils:
         })
 
         if os.path.exists(pred_gb_tgz_fp):
-            print(f'Generated the following gzipped version of the predicted viral sequences in Genbank format: '
+            print(f'Generated gzipped version of the predicted viral sequences in Genbank format: '
                   f'{pred_gb_tgz_fp}')
 
         # To create BinnedContig, need to create another directory with each of the "bins" as separate files?
