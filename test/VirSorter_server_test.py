@@ -120,10 +120,10 @@ class VirSorterTest(unittest.TestCase):
             'add_genomes': None,
             # 'add_genomes': added_genomes,
             'database': '1',
-            'virome': '0',
+            'virome': '1',
             'diamond': '1',
-            'keep_db': '0',
-            'no_c': '1',
+            'keep_db': '1',
+            'no_c': '0',  # Test if 1 means it runs!
             'binned_contig_name': 'binnedContig'
 
         })[0]
