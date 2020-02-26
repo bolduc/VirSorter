@@ -1,4 +1,5 @@
 module-name:
+    VirSorter
 
 service-language:
     python
