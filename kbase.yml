@@ -1,6 +1,9 @@
 module-name:
     VirSorter
 
+module-description:
+    A KBase module
+
 service-language:
     python
 
