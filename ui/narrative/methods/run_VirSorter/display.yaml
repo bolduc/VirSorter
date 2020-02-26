@@ -42,19 +42,19 @@ parameters :
 
     add_genomes:
         ui-name: |
-            Additional phage references
+            Additional phage reference sequences
         short-hint: |
-            Add custom phage sequences to serve as references
+            Add additional phage sequences to serve as references
         long-hint: |
-            Add custom phage sequences to serve as references
+            Add additional phage sequences to serve as references, useful if RefSeq or Viromes do not contain genomes similar to suspected viruses
 
     virome:
         ui-name: |
             Enable virome decontamination
         short-hint: |
-            Run VIRSorter when most of the data is likely from viruses
+            Run VirSorter when most of the data is likely from viruses
         long-hint: |
-            Run VIRSorter for datasets that are mostly viral to force use of generic metrics of enrichment instead of calculated from the dataset.
+            Run VirSorter for datasets that are mostly viral to force use of generic metrics of enrichment instead of calculated from the dataset.
 
     diamond:
         ui-name: |
@@ -70,7 +70,7 @@ parameters :
         short-hint: |
             Keep HMM+BLAST DBs created from added phage sequences
         long-hint: |
-            Keep HMM+BLAST DBsn from added phage sequences, useful if you have custom phages that you want to include in several different analyses and want to use VIRSorter against them.
+            Keep HMM+BLAST DBsn from added phage sequences, useful if you have custom phages that you want to include in several different analyses and want to use VirSorter against them.
 
     no_c:
         ui-name: |
@@ -78,7 +78,7 @@ parameters :
         short-hint: |
             Flag to enable different calculation of enrichment statistics, uses a slower perl script for calculations
         long-hint: |
-            If no viruses are predicted, enable to force VIRSorter to use a perl (vs C) script to calculate enrichment statistics. This is slower, but more accurate.
+            If no viruses are predicted, enable to force VirSorter to use a perl (vs C) script to calculate enrichment statistics. This is slower, but more accurate.
 
     binned_contig_name:
         ui-name: |
