@@ -74,9 +74,8 @@
             "default_values": [ "1" ],
             "field_type": "checkbox",
             "checkbox_options": {
-                "checked_value": "1",
-                "unchecked_value": "0"
-
+                "unchecked_value": "1",
+                "checked_value": "0"
             }
         },
         {
