@@ -138,7 +138,7 @@ class VirSorterUtils:
         bool_args = ['virome', 'diamond', 'keep_db', 'no_c']  # keep_db = keep-db
 
         for bool_arg in bool_args:
-            if params[bool_arg] == 0:  # 0 is true and therefore run
+            if params[bool_arg] == 1:  # 0 is true and therefore run... though for some reason it's reversed on json
                 if bool_arg == 'keep_db':
                     bool_arg = 'keep-db'
 
