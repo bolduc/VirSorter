@@ -58,7 +58,7 @@ parameters :
 
     diamond:
         ui-name: |
-            Enable diamond?
+            Enable diamond? (only use wihen adding additional phage sequences)
         short-hint: |
             Flag to enable Diamond instead of BLASTP
         long-hint: |
