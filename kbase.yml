@@ -1,14 +1,10 @@
 module-name:
-    VirSorter
-
-module-description:
-    A KBase module
 
 service-language:
     python
 
 module-version:
-    0.1.25
+    0.1.26
 
 owners:
     [bbolduc]
