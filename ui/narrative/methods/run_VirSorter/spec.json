@@ -4,7 +4,7 @@
         "bbolduc"
     ],
     "contact": "bolduc.10@osu.edu",
-    "categories": ["active", "virus"],
+    "categories": ["active", "virus", "communities"],
     "widgets": {
         "input": null,
         "output": "kbaseBinnedContigs"
