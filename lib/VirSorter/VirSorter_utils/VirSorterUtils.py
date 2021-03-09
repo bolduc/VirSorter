@@ -78,6 +78,7 @@ html_template = Template("""<!DOCTYPE html>
         } );
       } );
     </script>
+    <div>VIRSorter_affi-contigs.tab file ID: ${affi_contigs_shock_id}</div>
   </body>
 </html>""")
 
@@ -170,7 +171,7 @@ class VirSorterUtils:
             error_msg += 'Exit Code: {}\nOutput:\n{}\nError: {}'.format(exitCode, output, err)
             raise RuntimeError(error_msg)
 
-    def _parse_summary(self, virsorter_global_fp):
+    def _parse_summary(self, virsorter_global_fp, affi_contigs_shock_id):
         columns = ['Contig_id', 'Nb genes contigs', 'Fragment', 'Nb genes', 'Category', 'Nb phage hallmark genes',
                    'Phage gene enrichment sig', 'Non-Caudovirales phage gene enrichment sig', 'Pfam depletion sig',
                    'Uncharacterized enrichment sig', 'Strand switch depletion sig', 'Short genes enrichment sig',
@@ -200,7 +201,7 @@ class VirSorterUtils:
         html = df.to_html(index=False, classes='my_class table-striped" id = "my_id')
 
         # Need to file write below
-        direct_html = html_template.substitute(html_table=html)
+        direct_html = html_template.substitute(html_table=html, affi_contigs_shock_id=affi_contigs_shock_id)
 
         # Find header so it can be copied to footer, as dataframe.to_html doesn't include footer
         start_header = Literal("<thead>")
@@ -431,8 +432,12 @@ class VirSorterUtils:
         created_objects.append({"ref": binned_contig_object_ref,
                                 "description": "BinnedContigs from VIRSorter"})
 
+        # Save VIRSorter_affi-contigs.tab for DRAM-v
+        affi_contigs_fp = os.path.join(output_dir, 'Metric_files', 'VIRSorter_affi-contigs.tab')
+        affi_contigs_shock_id = self.dfu.file_to_shock({'file_path': affi_contigs_fp})['shock_id']
+
         # Use global signal (i.e. summary) file and create HTML-formatted version
-        raw_html = self._parse_summary(glob_signal)
+        raw_html = self._parse_summary(glob_signal, affi_contigs_shock_id)
 
         html_fp = os.path.join(output_dir, 'index.html')
 
