@@ -433,7 +433,7 @@ class VirSorterUtils:
                                 "description": "BinnedContigs from VIRSorter"})
 
         # Save VIRSorter_affi-contigs.tab for DRAM-v
-        affi_contigs_fp = os.path.join(output_dir, 'Metric_files', 'VIRSorter_affi-contigs.tab')
+        affi_contigs_fp = os.path.join(virsorter_outdir, 'Metric_files', 'VIRSorter_affi-contigs.tab')
         affi_contigs_shock_id = self.dfu.file_to_shock({'file_path': affi_contigs_fp})['shock_id']
 
         # Use global signal (i.e. summary) file and create HTML-formatted version
