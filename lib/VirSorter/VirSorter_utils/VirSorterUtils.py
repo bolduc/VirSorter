@@ -78,7 +78,7 @@ html_template = Template("""<!DOCTYPE html>
         } );
       } );
     </script>
-    <div>VIRSorter_affi-contigs.tab file ID: ${affi_contigs_shock_id}</div>
+    
   </body>
 </html>""")
 
@@ -201,7 +201,7 @@ class VirSorterUtils:
         html = df.to_html(index=False, classes='my_class table-striped" id = "my_id')
 
         # Need to file write below
-        direct_html = html_template.substitute(html_table=html, affi_contigs_shock_id=affi_contigs_shock_id)
+        direct_html = html_template.substitute(html_table=html)
 
         # Find header so it can be copied to footer, as dataframe.to_html doesn't include footer
         start_header = Literal("<thead>")
@@ -244,8 +244,6 @@ class VirSorterUtils:
         # Output directory should be $PWD/virsorter-out - ASSUMES that's the output location
         virsorter_outdir = os.path.join(os.getcwd(), 'virsorter-out')
 
-        print(f'VIRSorter output directory contents: {os.listdir(virsorter_outdir)}')
-
         # Replacing individual download files with BinnedContigs
 
         # kb_deseq adds output files, then builds report files and sends all of them to the workspace
@@ -281,21 +279,7 @@ class VirSorterUtils:
 
         # Append error and out files from VIRSorter
         err_fp = os.path.join(virsorter_outdir, 'logs/err')
-        # if os.path.exists(err_fp):
-        #     output_files.append({
-        #         'path': os.path.join(virsorter_outdir, 'logs/err'),
-        #         'name': 'VIRSorter_err',
-        #         'label': 'VIRSorter_err',
-        #         'description': 'VIRSorter error log file, generated from the tool itself.'
-        #     })
         out_fp = os.path.join(virsorter_outdir, 'logs/out')
-        # if os.path.exists(out_fp):
-        #     output_files.append({
-        #         'path': os.path.join(virsorter_outdir, 'logs/out'),
-        #         'name': 'VIRSorter_out',
-        #         'label': 'VIRSorter_out',
-        #         'description': 'VIRSorter output log file, generated from the tool itself.'
-        #     })
 
         if not (os.path.exists(err_fp) or os.path.exists(out_fp)):
             print('Unable to find err and/or out files in LOG directory, contents:')
@@ -433,8 +417,15 @@ class VirSorterUtils:
                                 "description": "BinnedContigs from VIRSorter"})
 
         # Save VIRSorter_affi-contigs.tab for DRAM-v
-        affi_contigs_fp = os.path.join(virsorter_outdir, 'Metric_files', 'VIRSorter_affi-contigs.tab')
-        affi_contigs_shock_id = self.dfu.file_to_shock({'file_path': affi_contigs_fp})['shock_id']
+        print(f'Adding contig affiliation file, for DRAM-v compatibility.')
+        affi_contigs_fp = os.path.join(virsorter_outdir, 'Metric_files/VIRSorter_affi-contigs.tab')
+
+        affi_contigs_shock_fp = os.path.join(output_dir, 'VIRSorter_affi-contigs.tab')
+        shutil.copy(affi_contigs_fp, affi_contigs_shock_fp)
+
+        affi_contigs_shock_id = self.dfu.file_to_shock({
+            'file_path': affi_contigs_shock_fp
+        })['shock_id']
 
         # Use global signal (i.e. summary) file and create HTML-formatted version
         raw_html = self._parse_summary(glob_signal, affi_contigs_shock_id)
@@ -458,7 +449,8 @@ class VirSorterUtils:
 
         report_params = {'message': 'Here are the results from your VIRSorter run. Above, you\'ll find a report with '
                                     'all the identified (putative) viral genomes, and below, links to the report as '
-                                    'well as files generated.',
+                                    'well as files generated.\nFor DRAM-v users, the shock ID for the affi contigs file'
+                                    f' is: {affi_contigs_shock_id}',
                          'workspace_name': params['workspace_name'],
                          'html_links': html_report,
                          'direct_html_link_index': 0,
