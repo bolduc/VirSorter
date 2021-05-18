@@ -12,7 +12,8 @@
   "version_tag" : "release"
 }, {
   "module_name" : "KBaseReport",
-  "type" : "core"
+  "type" : "sdk",
+  "version_tag" : "release"
 }, {
   "module_name" : "MetagenomeUtils",
   "type" : "sdk",
